@@ -1,0 +1,11 @@
+RewriteEngine On
+
+RewriteRule ^admin/assets/css - [L]
+RewriteRule ^admin/assets/js - [L]
+
+# Изключете правилото, ако заявката сочи към реален файл или директория
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Пренасочете към index.php
+RewriteRule ^(.*)$ index.php [L]
