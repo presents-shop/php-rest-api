@@ -10,5 +10,7 @@ $router->get("/about-us", ["IndexController", "getAbout"]);
 $router->get("/contacts-us", ["IndexController", "getContacts"]);
 
 require "users.php";
+require "categories.php";
+require "products.php";
 
 $router->route($uri, $method);

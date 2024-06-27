@@ -5,7 +5,7 @@
             <a href="/" title="Начална страница" class="<?= NAV_MENU_LINK ?>">Начало</a>
         </li>
         <li>
-            <a href="/shop" title="Страница с продукти" class="<?= NAV_MENU_LINK ?>">Подаръци</a>
+            <a href="/products" title="Страница с продукти" class="<?= NAV_MENU_LINK ?>">Подаръци</a>
         </li>
         <li>
             <a href="/categories" title="Страница с категории" class="<?= NAV_MENU_LINK ?>">Категории</a>

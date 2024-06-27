@@ -72,6 +72,23 @@ class UserService
         }
     }
 
+    public function findAll()
+    {
+        global $database;
+
+        try {
+            $users = $database->getAll("SELECT * FROM users");
+
+            foreach($users as &$user) {
+                unset($user["password"]);
+            }
+
+            return $users;
+        } catch (Exception $ex) {
+            echo "Find all users error: " . $ex->getMessage();
+        }
+    }
+
     public static function generateToken($length = 32)
     {
         return bin2hex(random_bytes($length));
