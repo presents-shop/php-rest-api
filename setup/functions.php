@@ -5,6 +5,7 @@ function view($templateName, $data = array(), $statusCode = 200)
 	http_response_code($statusCode);
 	extract($data);
 	require 'views/' . $templateName . '.php';
+	exit;
 }
 
 function redirect($path, $statusCode = 200)

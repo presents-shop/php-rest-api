@@ -12,10 +12,14 @@
 
 <main>
     <div class="max-w-xl mx-auto mt-5">
+        <div class="text-red-500 mb-5">
+            <?= $errors["dublicate_email"] ?? null ?>
+        </div>
+
         <form action="/users/register" method="POST">
             <div class="mb-5">
                 <label for="email" class="block mb-1">Имейл</label>
-                <input type="email" name="email" title="Въведете вашия имейл адрес" id="email" class="<?= FORM_CONTROL ?>">
+                <input type="email" name="email" title="Въведете вашия имейл адрес" id="email" value="<?= $input["email"] ?? null ?>" class="<?= FORM_CONTROL ?>">
 
                 <?php if (!empty($errors["email_empty"]) || !empty($errors["email_length"])): ?>
                     <div class="text-red-500">
@@ -27,7 +31,7 @@
             <div class="mb-5">
                 <label for="password" class="block mb-1">Нова парола</label>
                 <?= $errors["email"] ?? null ?>
-                <input type="password" name="password" title="Въведете вашата нова парола" id="password" class="<?= FORM_CONTROL ?>">
+                <input type="password" name="password" title="Въведете вашата нова парола" id="password" value="<?= $input["password"] ?? null ?>" class="<?= FORM_CONTROL ?>">
 
                 <?php if (!empty($errors["password_empty"]) || !empty($errors["password_length"])): ?>
                     <div class="text-red-500">
@@ -39,7 +43,7 @@
             <div class="mb-5">
                 <?= $errors["email"] ?? null ?>
                 <label for="cpassword" class="block mb-1">Потвърдете паролата</label>
-                <input type="password" name="cpassword" title="Потвърдете вашата нова парола" id="cpassword" class="<?= FORM_CONTROL ?>">
+                <input type="password" name="cpassword" title="Потвърдете вашата нова парола" id="cpassword" value="<?= $input["cpassword"] ?? null ?>" class="<?= FORM_CONTROL ?>">
 
                 <?php if (!empty($errors["passwords_match"])): ?>
                     <div class="text-red-500">

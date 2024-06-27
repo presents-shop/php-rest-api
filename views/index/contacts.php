@@ -1,4 +1,5 @@
 <?php require ("views/partials/head.php"); ?>
+<?php require ("styles/index.php"); ?>
 
 <header>
     <div class="border">

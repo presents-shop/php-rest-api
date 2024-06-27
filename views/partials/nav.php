@@ -1,10 +1,26 @@
 <div class="flex justify-between items-center py-4">
     <a href="/" class="text-2xl font-bold"><?= WEBSITE_TITLE ?></a>
     <ul class="flex items-center gap-2">
-        <?php foreach(DESKTOP_NAV_LINKS as $navLink): ?>
-            <li>
-                <a href="<?= $navLink["link"] ?>" title="<?= $navLink["title"] ?>" class="block py-2 px-4 border rounded hover:bg-gray-200"><?= $navLink["name"] ?></a>
-            </li>
-        <?php endforeach; ?>
+        <li>
+            <a href="/" title="Начална страница" class="<?= NAV_MENU_LINK ?>">Начало</a>
+        </li>
+        <li>
+            <a href="/shop" title="Страница с продукти" class="<?= NAV_MENU_LINK ?>">Подаръци</a>
+        </li>
+        <li>
+            <a href="/categories" title="Страница с категории" class="<?= NAV_MENU_LINK ?>">Категории</a>
+        </li>
+        <li>
+            <a href="/about-us" title="Страница за магазина" class="<?= NAV_MENU_LINK ?>">За нас</a>
+        </li>
+        <li>
+            <a href="/contacts-us" title="Страница за контакти" class="<?= NAV_MENU_LINK ?>">Контакти</a>
+        </li>
+        <li>
+            <a href="/users/login" title="Влизане в профила" class="<?= NAV_MENU_LINK ?>">Вход</a>
+        </li>
+        <li>
+            <a href="/users/register" title="Създаване на нов профил" class="<?= NAV_MENU_LINK ?>">Регистрация</a>
+        </li>
     </ul>
 </div>

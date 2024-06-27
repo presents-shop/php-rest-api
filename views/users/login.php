@@ -12,10 +12,14 @@
 
 <main>
     <div class="max-w-xl mx-auto mt-5">
+        <div class="text-red-500 mb-5">
+            <?= $errors["invalid_credentials"] ?? null ?>
+        </div>
+
         <form action="/users/login" method="POST">
             <div class="mb-5">
                 <label for="email" class="block mb-1">Имейл</label>
-                <input type="email" name="email" title="Въведете вашия имейл адрес" id="email" class="<?= FORM_CONTROL ?>">
+                <input type="email" name="email" title="Въведете вашия имейл адрес" id="email" value="<?= $input["email"] ?? null ?>" class="<?= FORM_CONTROL ?>">
 
                 <?php if (!empty($errors["email_empty"]) || !empty($errors["email_length"])): ?>
                     <div class="text-red-500">
@@ -26,7 +30,7 @@
             </div>
             <div class="mb-5">
                 <label for="password" class="block mb-1">Нова парола</label>
-                <input type="password" name="password" title="Въведете вашата нова парола" id="password" class="<?= FORM_CONTROL ?>">
+                <input type="password" name="password" title="Въведете вашата нова парола" id="password" value="<?= $input["password"] ?? null ?>" class="<?= FORM_CONTROL ?>">
                 
                 <?php if (!empty($errors["password_empty"]) || !empty($errors["password_length"])): ?>
                     <div class="text-red-500">
@@ -47,7 +51,8 @@
             </div>
             <div>
                 <button type="submit" class="<?= PRIMARY_BUTTON ?>">Влизане</button><br />
-                <a href="/users/register" class="mt-5 <?= NAV_LINK ?>">Създаване на профил</a>
+                <a href="/users/register" class="mt-5 <?= NAV_LINK ?>">Създаване на профил</a><br />
+                <a href="/users/forgot-password" class="mt-5 <?= NAV_LINK ?>">Забравена парола</a>
             </div>
         </form>
     </div>

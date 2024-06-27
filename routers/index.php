@@ -6,8 +6,8 @@ $uri = $_SERVER["REQUEST_URI"];
 $method = $_SERVER["REQUEST_METHOD"];
 
 $router->get("/", ["IndexController", "getHome"]);
-$router->get("/about", ["IndexController", "getAbout"]);
-$router->get("/contacts", ["IndexController", "getContacts"]);
+$router->get("/about-us", ["IndexController", "getAbout"]);
+$router->get("/contacts-us", ["IndexController", "getContacts"]);
 
 require "users.php";
 
