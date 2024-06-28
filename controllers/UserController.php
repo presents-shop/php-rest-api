@@ -3,18 +3,6 @@
 class UserController
 {
     // GET METHODS
-    public static function getAll() {
-        $user = new UserService();
-
-        $users = $user->findAll();
-
-        $meta = new MetaTags(
-            "Потребители" . " | " . "Админ панел",
-            "Влезте в профила си от тук.",
-        );
-
-        view("admin/users/index", ["users" => $users, "meta" => $meta->getTags()]);
-    }
     
     public static function getRegister()
     {

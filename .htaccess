@@ -1,7 +1,11 @@
 RewriteEngine On
 
+# Изключване на конкретни пътища от правилото
 RewriteRule ^admin/assets/css - [L]
 RewriteRule ^admin/assets/js - [L]
+
+# Пренасочване на /admin към admin/index.php
+RewriteRule ^admin/(.*)$ admin/index.php [L]
 
 # Изключете правилото, ако заявката сочи към реален файл или директория
 RewriteCond %{REQUEST_FILENAME} !-f

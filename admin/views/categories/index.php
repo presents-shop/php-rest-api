@@ -3,7 +3,7 @@
 <header>
     <div class="border">
         <div class="container mx-auto">
-            
+            <?php require ("views/admin/partials/nav.php"); ?>
         </div>
     </div>
     <h1 class="bg-gray-100 text-center py-10 text-4xl">Потребители</h1>

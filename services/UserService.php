@@ -15,8 +15,12 @@ class UserService
 
         $newUser = [
             "email" => $data["email"],
+            "phone" => $data["phone"],
             "password" => password_hash($data["password"], PASSWORD_DEFAULT),
-            "options" => json_encode($data["options"]),
+            "options" => json_encode([
+                "first_name" => $data["first_name"],
+                "last_name" => $data["last_name"]
+            ]),
             "token" => self::generateToken()
         ];
 

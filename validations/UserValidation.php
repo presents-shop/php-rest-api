@@ -14,6 +14,18 @@ class UserValidation
             $errors["email_length"] = "Въведете валиден имейл адрес";
         }
 
+        if (empty($data["phone"])) {
+            $errors["phone"] = "Това поле не може да бъде празно";
+        }
+
+        if (empty($data["first_name"])) {
+            $errors["first_name"] = "Това поле не може да бъде празно";
+        }
+
+        if (empty($data["last_name"])) {
+            $errors["last_name"] = "Това поле не може да бъде празно";
+        }
+
         if (empty($data["password"])) {
             $errors["password_empty"] = "Това поле не може да бъде празно";
         }
