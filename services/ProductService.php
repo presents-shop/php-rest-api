@@ -135,12 +135,12 @@ class ProductService
 
         $sql = "SELECT * FROM products";
 
-        if ($offset) {
-            $sql .= " OFFSET $offset";
-        }
-        
         if ($limit) {
             $sql .= " LIMIT $limit";
+        }
+        
+        if ($offset) {
+            $sql .= " OFFSET $offset";
         }
 
         try {

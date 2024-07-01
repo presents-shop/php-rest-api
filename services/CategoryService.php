@@ -99,12 +99,12 @@ class CategoryService
 
         $sql = "SELECT * FROM categories";
 
-        if ($offset) {
-            $sql .= " OFFSET $offset";
-        }
-        
         if ($limit) {
             $sql .= " LIMIT $limit";
+        }
+        
+        if ($offset) {
+            $sql .= " OFFSET $offset";
         }
 
         try {

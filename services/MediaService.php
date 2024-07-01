@@ -142,4 +142,52 @@ class MediaService
             echo "Fetch single image error: " . $ex->getMessage();
         }
     }
+
+    public static function update($id, $data)
+    {
+        global $database;
+
+        $media = self::findOne($id);
+
+        if (!$media) {
+            Response::badRequest(["invalid_id" => "Този файл не съществува"])->send();
+        }
+
+        $newMedia = [
+            "width" => $data->width,
+            "height" => $data->height,
+            "title" => $data->title,
+            "decoding" => $data->decoding,
+        ];
+
+        try {
+            $database->update("media", $newMedia, "id = $id");
+            return self::findOne($id);
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
+    public static function findAll($offset, $limit)
+    {
+        global $database;
+
+        $sql = "SELECT * FROM media";
+
+        if ($limit) {
+            $sql .= " LIMIT $limit";
+        }
+        
+        if ($offset) {
+            $sql .= " OFFSET $offset";
+        }
+
+        try {
+            $mediaFiles = $database->getAll($sql, []);
+
+            return $mediaFiles;
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
 }
