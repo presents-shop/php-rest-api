@@ -49,8 +49,7 @@ class UserService
             Response::badRequest(["invalid_credentials" => "Имейл адрес или парола са невалидни."])->send();
         }
         
-        $jwt = new JsonWebToken();
-        $token = $jwt->generate(["email" => $user["email"]], JSON_WEB_TOKEN_EXPIRLY_IN_SECONDS);
+        $token = JsonWebToken::generate(['user_id' => $user["id"]]);
 
         return $token;
     }
