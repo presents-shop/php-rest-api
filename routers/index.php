@@ -12,5 +12,6 @@ $router->get("/contacts-us", ["IndexController", "getContacts"]);
 require "users.php";
 require "categories.php";
 require "products.php";
+require "media.php";
 
 $router->route($uri, $method);

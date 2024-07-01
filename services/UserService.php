@@ -2,26 +2,29 @@
 
 class UserService
 {
-    private $errors = [];
-
-    public function register($data)
+    public static function register($data)
     {
-        $user = self::findOne($data["email"], "email");
+        $user = self::findOne($data->email, "email");
 
         if ($user) {
-            $this->errors["dublicate_email"] = "Този имейл вече е използван за регистрация.";
-            return false;
+            Response::badRequest(["dublicate_email" => "Този имейл вече е използван за регистрация."])->send();
         }
 
+        $passwordHash = password_hash($data->password, PASSWORD_DEFAULT);
+
+        $options = json_encode([
+            "first_name" => $data->first_name,
+            "last_name" => $data->last_name
+        ]);
+
+        $token = self::generateToken();
+
         $newUser = [
-            "email" => $data["email"],
-            "phone" => $data["phone"],
-            "password" => password_hash($data["password"], PASSWORD_DEFAULT),
-            "options" => json_encode([
-                "first_name" => $data["first_name"],
-                "last_name" => $data["last_name"]
-            ]),
-            "token" => self::generateToken()
+            "email" => $data->email,
+            "phone" => $data->phone,
+            "password" => $passwordHash,
+            "options" => $options,
+            "token" => $token
         ];
 
         global $database;
@@ -29,25 +32,21 @@ class UserService
         try {
             $database->insert("users", $newUser);
         } catch (Exception $ex) {
-            echo "Insert user error: " . $ex->getMessage();
+            throw new Exception($ex->getMessage());
         }
 
-        return $this->findOne($database->lastInsertedId());
+        return self::findOne($database->lastInsertedId());
     }
 
-    public function login($data)
+    public static function login($data)
     {
-        $user = self::findOne($data["email"], "email", "*", true);
-
-        
+        $user = self::findOne($data->email, "email", "*", true);
         if (!$user) {
-            $this->errors["invalid_credentials"] = "Имейл адрес или парола са невалидни.";
-            return false;
+            Response::badRequest(["invalid_credentials" => "Имейл адрес или парола са невалидни."])->send();
         }
-        
-        if (!password_verify($data["password"], $user["password"])) {
-            $this->errors["invalid_credentials"] = "Имейл адрес или парола са невалидни.";
-            return false;
+
+        if (!password_verify($data->password, $user["password"])) {
+            Response::badRequest(["invalid_credentials" => "Имейл адрес или парола са невалидни."])->send();
         }
         
         $jwt = new JsonWebToken();
@@ -56,7 +55,7 @@ class UserService
         return $token;
     }
 
-    public function findOne($value, $column = "id", $fields = "*", $withPassword = false)
+    public static function findOne($value, $column = "id", $fields = "*", $withPassword = false)
     {
         global $database;
 
@@ -76,7 +75,7 @@ class UserService
         }
     }
 
-    public function findAll()
+    public static function findAll()
     {
         global $database;
 
@@ -96,9 +95,5 @@ class UserService
     public static function generateToken($length = 32)
     {
         return bin2hex(random_bytes($length));
-    }
-
-    public function getErrors() {
-        return $this->errors;
     }
 }

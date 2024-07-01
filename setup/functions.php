@@ -29,7 +29,7 @@ function generateRandomToken($length = 64)
 }
 
 set_exception_handler(function($exception) {
-    echo "Uncaught exception: " , $exception->getMessage(), "\n";
+	Response::badRequest($exception->getMessage(), $exception->getTrace())->send();
 });
 
 function generateSecurityCode() {

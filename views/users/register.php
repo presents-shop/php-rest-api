@@ -45,7 +45,7 @@
             <div class="grid md:grid-cols-2 gap-5">
                 <div class="mb-5">
                     <label for="first_name" class="block mb-1">Име</label>
-                    <input type="text" name="phone" title="Въведете името си" id="first_name" value="<?= $input["first_name"] ?? null ?>" class="<?= FORM_CONTROL ?>">
+                    <input type="text" name="first_name" title="Въведете името си" id="first_name" value="<?= $input["first_name"] ?? null ?>" class="<?= FORM_CONTROL ?>">
     
                     <?php if (!empty($errors["first_name"])): ?>
                         <div class="text-red-500">
