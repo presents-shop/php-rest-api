@@ -10,7 +10,7 @@ class UserValidation
             $errors["invalid_email"] = "Въведете валиден имейл адрес";
         }
         
-        if (empty($data->phone)) {
+        if (empty($data->phone) || !self::validatePhoneNumber($data->phone)) {
             $errors["invalid_phone"] = "Въведете валиден телефонен номер";
         }
         
@@ -48,5 +48,21 @@ class UserValidation
         }
 
         return $errors;
+    }
+
+    public static function validatePhoneNumber(string $phoneNumber): Bool {
+        $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
+        
+        if (strlen($phoneNumber) < 7) {
+            return false;
+        }
+        
+        $pattern = '/^(0|\+359|359)?(87|88|89)[2-9]\d{6}$/';
+
+        if (preg_match($pattern, $phoneNumber)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

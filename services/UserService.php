@@ -1,5 +1,9 @@
 <?php
 
+require "vendor/autoload.php";
+
+use Jchook\Uuid;
+
 class UserService
 {
     public static function register($data)
@@ -17,9 +21,11 @@ class UserService
             "last_name" => $data->last_name
         ]);
 
-        $token = self::generateToken();
+        $id = Uuid::v4();
+        $token = TokenService::generateToken();
 
         $newUser = [
+            "id" => $id,
             "email" => $data->email,
             "phone" => $data->phone,
             "password" => $passwordHash,
@@ -31,11 +37,14 @@ class UserService
 
         try {
             $database->insert("users", $newUser);
+
+            $user = self::findOne($id);
+            unset($user["token"]);
+            
+            return $user;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
-
-        return self::findOne($database->lastInsertedId());
     }
 
     public static function login($data)
@@ -67,8 +76,12 @@ class UserService
         try {
             $user = $database->getOne($sql, $params);
 
-            if (!$withPassword) {
+            if (!$withPassword && !empty($user["password"])) {
                 unset($user["password"]);
+            }
+
+            if (!empty($user["options"])) {
+                $user["options"] = json_decode($user["options"]);
             }
 
             return $user;
