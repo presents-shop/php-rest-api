@@ -4,3 +4,4 @@ uploads
 todo.md
 private.key
 public.key
+composer.lock
