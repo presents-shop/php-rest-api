@@ -105,6 +105,21 @@ class UserService
         }
     }
 
+    public static function forgotPassword(string $email): bool
+    {
+        $user = self::findOne($email, "email");
+
+        if (!$user) {
+            return false;
+        }
+
+        $tokenString = TokenService::generateToken();
+
+        self::sendForgotPassword($email, $tokenString);
+        
+        return true;
+    }
+
     public static function isAuthenticated(): array|bool
     {
         $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
@@ -201,6 +216,21 @@ class UserService
         $processedHtml = HTMLTemplateProcessor::replaceVariables($html, $variables);
 
         $mail = new Mail($email, "Успешно направена регистрация!", $processedHtml);
+        $mail->send();
+    }
+
+    public static function sendForgotPassword($email, $token) {
+        $variables = [
+            "host" => WEBSITE_LINK,
+            "reset_link" => $token,
+            "email" => $email,
+            "website_email" => WEBSITE_EMAIL
+        ];
+
+        $html = file_get_contents("email-templates/password-reset.html");
+        $processedHtml = HTMLTemplateProcessor::replaceVariables($html, $variables);
+
+        $mail = new Mail($email, "Възстановяване на паролата!", $processedHtml);
         $mail->send();
     }
 }

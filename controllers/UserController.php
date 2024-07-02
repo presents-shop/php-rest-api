@@ -6,9 +6,9 @@ class UserController
     public static function register()
     {
         $data = getJSONData();
-        
+
         UserValidation::register($data);
-        
+
         $newUser = UserService::register($data);
 
         UserService::sendVerifyEmail($newUser["email"], $newUser["token"]);
@@ -39,5 +39,22 @@ class UserController
         AuthGuard::authenticated();
         $user = UserService::generateNewEmailVerifyToken();
         Response::ok($user)->send();
+    }
+
+    public static function forgotPassword()
+    {
+        $data = getJSONData();
+
+        if (empty($data->email)) {
+            Response::badRequest("invalid_email", "Невалиден имейл адрес")->send();
+        }
+
+        $result = UserService::forgotPassword($data->email);
+
+        if (!$result) {
+            Response::badRequest("invalid_email", "Невалиден имейл адрес")->send();
+        }
+
+        Response::ok([])->send();
     }
 }
