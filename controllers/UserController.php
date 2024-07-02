@@ -5,9 +5,13 @@ class UserController
     // POST METHODS
     public static function register()
     {
-        UserValidation::register(getJSONData());
+        $data = getJSONData();
+        
+        UserValidation::register($data);
+        
+        $newUser = UserService::register($data);
 
-        $newUser = UserService::register(getJSONData());
+        UserService::sendVerifyEmail($newUser["email"], $newUser["token"]);
 
         Response::created($newUser)->send();
     }
@@ -26,16 +30,8 @@ class UserController
     public static function emailVerify()
     {
         $tokenString = $_GET["token"] ?? null;
-
-        try {
-            if (!TokenService::verifyToken($tokenString)) {
-                Response::badRequest(["invalid_token" => "Невалиден линк за потвърждение на профила."])->send();
-            }
-
-            Response::ok([])->send();
-        } catch (Exception $ex) {
-            Response::badRequest(["invalid_token" => "Невалиден линк за потвърждение на профила."])->send();
-        }
+        UserService::emailVerify($tokenString);
+        Response::ok([])->send();
     }
 
     public static function generateNewEmailVerifyToken()

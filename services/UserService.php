@@ -39,8 +39,6 @@ class UserService
             $database->insert("users", $newUser);
 
             $user = self::findOne($id);
-            unset($user["token"]);
-
             return $user;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -134,6 +132,38 @@ class UserService
         }
     }
 
+    public static function emailVerify($tokenString = null)
+    {
+        try {
+            if (!TokenService::verifyToken($tokenString)) {
+                Response::badRequest(["invalid_token" => "Невалиден линк за потвърждение на профила."])->send();
+            }
+
+            global $database;
+
+            $user = self::isAuthenticated();
+
+            if ($user["email_verified"] === 1) {
+                Response::badRequest(["error" => "Вече сте потвърдили имейл адреса си"])->send();
+            }
+
+            $id = $user["id"];
+
+            if ($user["token"] !== $tokenString) {
+                Response::badRequest(["invalid_token" => "Нямате достъп до този ресурс"])->send();
+            }
+
+            $data = [
+                "email_verified" => 1,
+                "token" => null
+            ];
+
+            $database->update("users", $data, "id = '$id'");
+        } catch (Exception $ex) {
+            Response::badRequest(["invalid_token" => "Невалиден линк за потвърждение на профила."])->send();
+        }
+    }
+
     public static function generateNewEmailVerifyToken()
     {
         try {
@@ -158,5 +188,19 @@ class UserService
         } catch (Exception $ex) {
             Response::badRequest("Update email verify token error: " . $ex->getMessage())->send();
         }
+    }
+
+    public static function sendVerifyEmail($email, $token)
+    {
+        $variables = [
+            "host" => WEBSITE_LINK,
+            "token_string" => $token
+        ];
+
+        $html = file_get_contents("email-templates/email-verify.html");
+        $processedHtml = HTMLTemplateProcessor::replaceVariables($html, $variables);
+
+        $mail = new Mail($email, "Успешно направена регистрация!", $processedHtml);
+        $mail->send();
     }
 }

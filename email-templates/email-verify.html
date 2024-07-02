@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif !important;
+            line-height: 1.6 !important;
+            background-color: #f4f4f4 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .container {
+            max-width: 600px !important;
+            margin: 0 auto !important;
+            padding: 20px !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        h2 {
+            color: #333333 !important;
+        }
+
+        p {
+            margin-bottom: 20px !important;
+        }
+
+        .button {
+            display: inline-block !important;
+            padding: 10px 20px !important;
+            background-color: #007bff !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            border-radius: 5px !important;
+        }
+
+        .button:hover {
+            background-color: #0056b3 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Потвърдете вашия профил в нашия уеб магазин за подаръци</h2>
+        <p>Здравейте,</p>
+        <p>Благодарим ви, че се регистрирахте в нашия уеб магазин за подаръци. Моля, натиснете бутона по-долу, за да
+            потвърдите вашата регистрация:</p>
+        <p><a href="{{ host }}/users/email-verify?token={{ token_string }}"
+                class="button">Потвърди профила</a></p>
+        <p>Ако не сте създали профил в нашия магазин, моля, пренебрегнете това съобщение.</p>
+        <p>С уважение,<br>Екипът на Уеб магазин за подаръци</p>
+    </div>
+</body>
+
+</html>
