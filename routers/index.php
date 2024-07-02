@@ -13,5 +13,6 @@ require "users.php";
 require "categories.php";
 require "products.php";
 require "media.php";
+require "cities.php";
 
 $router->route($uri, $method);
