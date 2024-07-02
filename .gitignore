@@ -2,3 +2,5 @@ vendor
 setup/config.php
 uploads
 todo.md
+private.key
+public.key

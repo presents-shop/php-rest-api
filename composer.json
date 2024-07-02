@@ -4,5 +4,8 @@
       "framework\\": "framework/",
       "controllers\\": "controllers/"
     }
+  },
+  "require": {
+    "firebase/php-jwt": "^6.10"
   }
 }

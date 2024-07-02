@@ -1,5 +1,8 @@
 RewriteEngine On
 
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
 # Изключване на конкретни пътища от правилото
 RewriteRule ^admin/assets/css - [L]
 RewriteRule ^admin/assets/js - [L]

@@ -111,8 +111,13 @@ class CategoryService
             $categories = $database->getAll($sql, []);
 
             foreach($categories as &$category) {
-                $category["meta_options"] = json_decode($category["meta_options"]);
-                $category["additional_image_ids"] = json_decode($category["additional_image_ids"]);
+                if (!empty($category["meta_options"])) {
+                    $category["meta_options"] = json_decode($category["meta_options"]);
+                }
+
+                if (!empty($category["additional_image_ids"])) {
+                    $category["additional_image_ids"] = json_decode($category["additional_image_ids"]);
+                }
             }
 
             return $categories;

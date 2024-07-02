@@ -31,6 +31,7 @@ class Autoloader
 Autoloader::register([
 	"validations",
 	"controllers",
+	"guards",
 	"services",
 	"framework"
 ]);

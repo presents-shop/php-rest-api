@@ -5,6 +5,8 @@ class CategoryController
     // POST ROUTES
     public static function saveItem()
     {
+        AuthGuard::authenticated();
+
         $data = getJSONData();
 
         CategoryValidation::saveItem($data);
@@ -22,6 +24,8 @@ class CategoryController
 
     public static function deleteItem()
     {
+        AuthGuard::authenticated();
+
         $id = $_GET["id"];
 
         $result = CategoryService::delete($id);
@@ -56,6 +60,8 @@ class CategoryController
 
     public static function saveThumbnail()
     {
+        AuthGuard::authenticated();
+
         $data = getJSONData();
 
         CategoryValidation::saveThumbnail($data);
@@ -79,6 +85,8 @@ class CategoryController
 
     public static function saveAdditionalImages()
     {
+        AuthGuard::authenticated();
+        
         $data = getJSONData();
 
         CategoryValidation::saveAdditionalImages($data);

@@ -49,7 +49,10 @@ class UserService
             Response::badRequest(["invalid_credentials" => "Имейл адрес или парола са невалидни."])->send();
         }
         
-        $token = JsonWebToken::generate(['user_id' => $user["id"]]);
+        $token = JsonWebToken::generateToken([
+            "user_id" => $user["id"],
+            "password" => $user["password"]
+        ]);
 
         return $token;
     }
@@ -87,7 +90,7 @@ class UserService
 
             return $users;
         } catch (Exception $ex) {
-            echo "Find all users error: " . $ex->getMessage();
+            Response::badRequest("Find all users error: ".$ex->getMessage())->send();
         }
     }
 
