@@ -61,22 +61,22 @@ class CityService
         }
     }
 
-    public static function getStates()
+    public static function getStates($columns = "*")
     {
         global $database;
 
         try {
-            $states = $database->getAll("SELECT * FROM states");
+            $states = $database->getAll("SELECT $columns FROM states");
             return $states;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
     }
 
-    public static function getCities($stateId = null)
+    public static function getCities($stateId = null, $columns = "*")
     {
         global $database;
-        $sql = "SELECT * FROM cities";
+        $sql = "SELECT $columns FROM cities";
         $params = [];
 
         if ($stateId) {
@@ -88,6 +88,21 @@ class CityService
             $cities = $database->getAll($sql, $params);
             return $cities;
         } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
+    public static function generateToExcel($json = [], $filename = "cities.xlsx")
+    {
+        try {
+            $folder = "temp/";
+
+            if (!file_exists($folder)) {
+                mkdir($folder, 0777, false);
+            }
+
+            ExcelGenerator::generateFromJson($json, $folder.$filename);
+        } catch(Exception $ex) {
             throw new Exception($ex->getMessage());
         }
     }
