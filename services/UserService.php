@@ -40,7 +40,7 @@ class UserService
 
             $user = self::findOne($id);
             unset($user["token"]);
-            
+
             return $user;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -57,7 +57,7 @@ class UserService
         if (!password_verify($data->password, $user["password"])) {
             Response::badRequest(["invalid_credentials" => "Имейл адрес или парола са невалидни."])->send();
         }
-        
+
         $token = JsonWebToken::generateToken([
             "user_id" => $user["id"],
             "password" => $user["password"]
@@ -97,18 +97,66 @@ class UserService
         try {
             $users = $database->getAll("SELECT * FROM users");
 
-            foreach($users as &$user) {
+            foreach ($users as &$user) {
                 unset($user["password"]);
             }
 
             return $users;
         } catch (Exception $ex) {
-            Response::badRequest("Find all users error: ".$ex->getMessage())->send();
+            Response::badRequest("Find all users error: " . $ex->getMessage())->send();
         }
     }
 
-    public static function generateToken($length = 32)
+    public static function isAuthenticated(): array|bool
     {
-        return bin2hex(random_bytes($length));
+        $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
+
+        try {
+            $decoded = JsonWebToken::validateToken($token);
+
+            if (!$decoded) {
+                Response::unauthorized("Нямате достъп до този ресурс")->send();
+            }
+
+            $user = UserService::findOne($decoded->user_id, "id", "*", true);
+
+            if (!$user) {
+                Response::unauthorized("Невалидни потребителски данни")->send();
+            }
+
+            if ($decoded->password !== $user["password"]) {
+                Response::unauthorized("Паролата е била променена")->send();
+            }
+
+            return $user;
+        } catch (Exception $ex) {
+            return false;
+        }
+    }
+
+    public static function generateNewEmailVerifyToken()
+    {
+        try {
+            $user = self::isAuthenticated() ?? null;
+
+            if (!$user) {
+                Response::ok(["invalid_credentials" => "Имейл адрес или парола са невалидни"])->send();
+            }
+
+            $tokenString = TokenService::generateToken();
+
+            global $database;
+
+            $data = [
+                "token" => $tokenString
+            ];
+
+            $id = $user["id"];
+
+            $database->update("users", $data, "id = '$id'");
+            return self::findOne($id);
+        } catch (Exception $ex) {
+            Response::badRequest("Update email verify token error: " . $ex->getMessage())->send();
+        }
     }
 }
