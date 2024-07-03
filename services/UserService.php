@@ -125,20 +125,24 @@ class UserService
         $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
 
         try {
+            if (!$token) {
+                return false;
+            }
+
             $decoded = JsonWebToken::validateToken($token);
 
             if (!$decoded) {
-                Response::unauthorized("Нямате достъп до този ресурс")->send();
+                return false;
             }
 
             $user = UserService::findOne($decoded->user_id, "id", "*", true);
 
             if (!$user) {
-                Response::unauthorized("Невалидни потребителски данни")->send();
+                return false;
             }
 
             if ($decoded->password !== $user["password"]) {
-                Response::unauthorized("Паролата е била променена")->send();
+                return false;
             }
 
             return $user;
