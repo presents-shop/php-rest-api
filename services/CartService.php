@@ -8,7 +8,7 @@ class CartService
 
     public static function saveItemToSession($product, $data)
     {
-        function findIndexByProductId($cart, $product_id)
+        function findIndexByProductId($product_id, $cart = [])
         {
             foreach ($cart as $index => $item) {
                 if ($item['product_id'] == $product_id) {
@@ -20,7 +20,7 @@ class CartService
 
         function removeProductFromCart(&$cart, $product_id)
         {
-            $index = findIndexByProductId($cart, $product_id);
+            $index = findIndexByProductId($product_id, $cart);
             if ($index !== -1) {
                 array_splice($cart, $index, 1);
             }
@@ -35,13 +35,15 @@ class CartService
             $data->quantity = $product["quantity"];
         }
 
-        $price = $product["selling_price"] ? $product["original_price"] : $product["original_price"];
+        $price = $product["selling_price"] ? $product["selling_price"] : $product["original_price"];
 
         if (!in_array($data->product_id, array_column($_SESSION[self::$cart] ?? [], "product_id"))) {
             $_SESSION[self::$cart][] = [
                 "product_id" => $data->product_id,
+                "title" => $product["title"],
                 "price" => $price,
                 "quantity" => $data->quantity,
+                "amount" => floatval($price) * intval($data->quantity)
             ];
         } else {
             foreach ($_SESSION[self::$cart] as &$item) {
@@ -53,13 +55,14 @@ class CartService
         }
     }
 
-    public static function getCartItems($userId)
+    public static function getCartItems($userId, $columns = "*")
     {
         global $database;
 
         try {
             $params = [":user_id" => $userId];
-            $cartItems = $database->getAll("SELECT * FROM cart WHERE user_id = :user_id", $params);
+            $cartItems = $database->getAll("SELECT $columns FROM cart WHERE user_id = :user_id", $params);
+            
             return $cartItems;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -74,13 +77,15 @@ class CartService
             $data->quantity = $product["quantity"];
         }
 
-        $price = $product["selling_price"] ? $product["original_price"] : $product["original_price"];
+        $price = $product["selling_price"] ? $product["selling_price"] : $product["original_price"];
 
         $cartItem = [
             "user_id" => $userId,
+            "title" => $product["title"],
             "product_id" => $data->product_id,
             "price" => $price,
-            "quantity" => $data->quantity
+            "quantity" => $data->quantity,
+            "amount" => floatval($price) * intval($data->quantity)
         ];
 
         if (!$database->getOne(
@@ -102,5 +107,13 @@ class CartService
 
         $params = [":user_id" => $userId, ":product_id" => $data->product_id];
         $database->delete("cart", "user_id = :user_id AND product_id = :product_id", $params);
+    }
+
+    public static function deleteItemsByUser($userId)
+    {
+        global $database;
+
+        $params = [":user_id" => $userId];
+        $database->delete("cart", "user_id = :user_id", $params);
     }
 }

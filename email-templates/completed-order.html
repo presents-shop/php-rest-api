@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Order</title>
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .container {
+            max-width: 600px !important;
+            margin: 0 auto !important;
+            background: #ffffff !important;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, tr, th, td {
+            border: 1px solid #efefef;
+            text-align: center;
+        }
+        table tfoot {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Нова поръчка</h2>
+        <p>Здравейте,</p>
+        <p>Благодарим ви, че избрахте нашия магазин за подаръци. Можете да прегледате детайлите за поръчката си по-долу:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Име</th>
+                    <th>Кол.</th>
+                    <th>Цена (лв)</th>
+                    <th>Общо (лв)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ rows }}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"></td>
+                    <td colspan="1">Общо</td>
+                    <td colspan="1">{{ amount }}</td>
+                </tr>
+            </tfoot>
+        </table>
+        <p>С уважение,<br>Екипът на Уеб магазин за подаръци</p>
+    </div>
+</body>
+
+</html>

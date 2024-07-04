@@ -8,11 +8,15 @@ class CartController
     {
         $data = getJSONData();
 
-        $columns = "id, quantity, original_price, selling_price";
+        $columns = "id, title, quantity, original_price, selling_price";
         $product = ProductService::findOne($data->product_id, "id", $columns);
 
         if (!$product) {
             Response::badRequest(["invalid_product_id" => "Невалидно id на продукт"])->send();
+        }
+        
+        if ($product["quantity"] == 0) {
+            Response::badRequest(["empty_quantity" => "Няма наличност от този продукт"])->send();
         }
 
         $user = UserService::isAuthenticated();

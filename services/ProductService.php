@@ -1,5 +1,9 @@
 <?php
 
+require "vendor/autoload.php";
+
+use Jchook\Uuid;
+
 class ProductService
 {
     public static function create($data)
@@ -16,6 +20,7 @@ class ProductService
         $productOptions = json_encode($data->product_options) ?? [];
 
         $newProduct = [
+            "id" => Uuid::v4(),
             "title" => $data->title,
             "slug" => $data->slug,
             "short_description" => $data->short_description ?? null,
@@ -52,15 +57,15 @@ class ProductService
             if (!empty($product["meta_options"])) {
                 $product["meta_options"] = json_decode($product["meta_options"]);
             }
-            
+
             if (!empty($product["product_options"])) {
                 $product["product_options"] = json_decode($product["product_options"]);
             }
-            
+
             if (!empty($product["og_options"])) {
                 $product["og_options"] = json_decode($product["og_options"]);
             }
-            
+
             if (!empty($product["twitter_options"])) {
                 $product["twitter_options"] = json_decode($product["twitter_options"]);
             }
@@ -68,7 +73,7 @@ class ProductService
             if (!empty($product["additional_image_ids"])) {
                 $product["additional_image_ids"] = json_decode($product["additional_image_ids"] ?? []);
             }
-            
+
             return $product;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -112,6 +117,24 @@ class ProductService
         }
     }
 
+    public static function decreaseQuantity($id, $quantity)
+    {
+        global $database;
+
+        $product = ProductService::findOne($id);
+
+        $newProduct = [
+            "quantity" => intval($product["quantity"]) - intval($quantity)
+        ];
+        
+        try {
+            $database->update("products", $newProduct, "id = $id");
+            return self::findOne($id);
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
     public static function delete($id)
     {
         global $database;
@@ -138,7 +161,7 @@ class ProductService
         if ($limit) {
             $sql .= " LIMIT $limit";
         }
-        
+
         if ($offset) {
             $sql .= " OFFSET $offset";
         }
@@ -146,23 +169,23 @@ class ProductService
         try {
             $products = $database->getAll($sql, []);
 
-            foreach($products as &$product) {
+            foreach ($products as &$product) {
                 if (!empty($product["meta_options"])) {
                     $product["meta_options"] = json_decode($product["meta_options"]);
                 }
-                
+
                 if (!empty($product["product_options"])) {
                     $product["product_options"] = json_decode($product["product_options"]);
                 }
-                
+
                 if (!empty($product["og_options"])) {
                     $product["og_options"] = json_decode($product["og_options"]);
                 }
-                
+
                 if (!empty($product["twitter_options"])) {
                     $product["twitter_options"] = json_decode($product["twitter_options"]);
                 }
-    
+
                 if (!empty($product["additional_image_ids"])) {
                     $product["additional_image_ids"] = json_decode($product["additional_image_ids"] ?? []);
                 }
@@ -174,7 +197,8 @@ class ProductService
         }
     }
 
-    public static function saveThumbnail($data) {
+    public static function saveThumbnail($data)
+    {
         global $database;
 
         $id = $data->product_id;
@@ -188,7 +212,8 @@ class ProductService
         }
     }
 
-    public static function saveAdditionalImages($data) {
+    public static function saveAdditionalImages($data)
+    {
         global $database;
 
         $id = $data->product_id;
@@ -202,7 +227,8 @@ class ProductService
         }
     }
 
-    public static function saveCategory($data) {
+    public static function saveCategory($data)
+    {
         global $database;
 
         $id = $data->product_id;

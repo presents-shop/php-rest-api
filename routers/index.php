@@ -15,5 +15,6 @@ require "products.php";
 require "media.php";
 require "cities.php";
 require "cart.php";
+require "orders.php";
 
 $router->route($uri, $method);
