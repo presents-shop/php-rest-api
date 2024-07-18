@@ -3,13 +3,12 @@ RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
 
-# Изключване на конкретни пътища от правилото
-RewriteRule ^admin/assets/css - [L]
-RewriteRule ^admin/assets/js - [L]
+# Изключване на конкретни пътища от правилото, ако е необходимо
+# Например:
+# RewriteRule ^admin/assets/css - [L]
+# RewriteRule ^admin/assets/js - [L]
 
-# Изключете правилото, ако заявката сочи към реален файл или директория
+# Пренасочване към index.php за всички останали заявки (GET, POST, PUT, DELETE)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
-# Пренасочете към index.php
-RewriteRule ^(.*)$ index.php [L]
+RewriteRule ^(.*)$ index.php [QSA,L]

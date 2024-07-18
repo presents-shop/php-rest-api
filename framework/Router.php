@@ -38,15 +38,15 @@ class Router
 		$parsedUrl = parse_url($uri);
 		$path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
 		$query = isset($parsedUrl['query']) ? $parsedUrl['query'] : '';
-
+		
 		// Парсиране на query параметрите и добавяне към $_GET
 		parse_str($query, $query_params);
 		$_GET = array_merge($_GET, $query_params);
-
+		
 		foreach ($this->routes as $route) {
 			if ($route["method"] === $method && $this->isUriMatch($route["uri"], $path)) {
 				list($controllerClass, $controllerMethod) = $route["controller"];
-
+				
 				if (class_exists($controllerClass) && method_exists($controllerClass, $controllerMethod)) {
 					$controller = new $controllerClass();
 					$controller->$controllerMethod();

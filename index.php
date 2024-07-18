@@ -5,6 +5,7 @@ require "framework/Autoloader.php";
 
 session_start();
 
+require "setup/cors.php";
 require "setup/constants.php";
 require "setup/functions.php";
 require "setup/config.php";
