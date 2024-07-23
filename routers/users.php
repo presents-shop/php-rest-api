@@ -6,6 +6,9 @@ $router->post("/users/forgot-password", ["UserController", "forgotPassword"]);
 $router->post("/users/update-token", ["UserController", "generateNewEmailVerifyToken"]);
 
 $router->get("/users/email-verify", ["UserController", "emailVerify"]);
+$router->get("/users", ["UserController", "getLoggedInUser"]);
+
+$router->delete("/users", ["UserController", "logout"]);
 
 // admin only
 $router->get("/admin/users", ["UserController", "getAll"]);

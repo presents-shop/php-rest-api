@@ -57,4 +57,16 @@ class UserController
 
         Response::ok([])->send();
     }
+
+    public static function getLoggedInUser()
+    {
+        $user = UserService::isAuthenticated();
+        Response::ok($user)->send();
+    }
+
+    public static function logout()
+    {
+        unset($_SESSION["token"]);
+        Response::ok(true)->send();
+    }
 }
