@@ -37,4 +37,13 @@ class MediaController
 
         Response::ok($mediaFiles)->send();
     }
+
+    public static function getItem()
+    {
+        $id = $_GET["id"] ?? null;
+
+        $item = MediaService::findOne($id, "id");
+        
+        Response::ok($item)->send();
+    }
 }

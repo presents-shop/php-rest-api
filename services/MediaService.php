@@ -98,6 +98,7 @@ class MediaService
         }
 
         $fileName = basename($_FILES[$file]["name"]);
+        $fileType = basename($_FILES[$file]["type"]);
         $destinationPath = $destinationFolder . "/" . $fileName;
 
         $tmpFilePath = $_FILES[$file]["tmp_name"];
@@ -110,6 +111,7 @@ class MediaService
         $image = self::create([
             "width" => $dimensions[0],
             "height" => $dimensions[1],
+            "type" => $fileType,
             "path" => $destinationPath
         ]);
 

@@ -122,9 +122,13 @@ class UserService
 
     public static function isAuthenticated(): array|bool
     {
-        // $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
-        $token = $_SESSION["token"] ?? null;
+        if (!isset($_SERVER["HTTP_AUTHORIZATION"])) {
+            return false;
+        }
 
+        $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
+        // $token = $_SESSION["token"] ?? null;
+        
         try {
             if (!$token) {
                 return false;
