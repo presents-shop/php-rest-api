@@ -39,11 +39,37 @@ class CategoryController
 
         $category = CategoryService::findOne($id);
 
+        $category["media"] = self::getItemOptions($category,
+        [
+            "with_thumbnail" => $_GET["with_thumbnail"] ?? false,
+        ]);
+
         if (!$category) {
             Response::badRequest(["invalid_id" => "Тази категория не съществува"])->send();
         }
 
         Response::ok($category)->send();
+    }
+
+    public static function getItemOptions($category, $params)
+    {
+        $options = [];
+
+        if (!empty($params["with_thumbnail"]) && $category["thumbnail_id"]) {
+            $options["thumbnail"] = MediaService::findOne($category["thumbnail_id"]);
+        }
+
+        if (!empty($params["with_additional_images"]) && $category["additional_image_ids"]) {
+            $additionalImages = [];
+            
+            foreach($category["additional_image_ids"] as $id) {
+                $additionalImages[] = MediaService::findOne($id);
+            }
+
+            $options["additional_images"] = $additionalImages;
+        }
+
+        return $options;
     }
 
     public static function getItems()
@@ -54,8 +80,16 @@ class CategoryController
         $offset = ($page - 1) * $limit;
 
         $categories = CategoryService::findAll($offset, $limit);
+        $length = CategoryService::getItemsLength();
 
-        Response::ok($categories)->send();
+        foreach($categories as &$category) {
+            $category["media"] = self::getItemOptions($category, ["with_thumbnail" => true]);
+        }
+
+        Response::ok([
+            "items" => $categories,
+            "length" => $length,
+        ])->send();
     }
 
     public static function saveThumbnail()

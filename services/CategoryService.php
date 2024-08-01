@@ -104,7 +104,7 @@ class CategoryService
         if ($limit) {
             $sql .= " LIMIT $limit";
         }
-        
+
         if ($offset) {
             $sql .= " OFFSET $offset";
         }
@@ -112,7 +112,7 @@ class CategoryService
         try {
             $categories = $database->getAll($sql, []);
 
-            foreach($categories as &$category) {
+            foreach ($categories as &$category) {
                 if (!empty($category["meta_options"])) {
                     $category["meta_options"] = json_decode($category["meta_options"]);
                 }
@@ -128,7 +128,19 @@ class CategoryService
         }
     }
 
-    public static function saveThumbnail($data) {
+    public static function getItemsLength()
+    {
+        global $database;
+
+        try {
+            $data = $database->getOne("SELECT COUNT(*) AS 'length' FROM categories");
+            return $data["length"];
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+    public static function saveThumbnail($data)
+    {
         global $database;
 
         $id = $data->category_id;
@@ -142,7 +154,8 @@ class CategoryService
         }
     }
 
-    public static function saveAdditionalImages($data) {
+    public static function saveAdditionalImages($data)
+    {
         global $database;
 
         $id = $data->category_id;

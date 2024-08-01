@@ -197,6 +197,18 @@ class ProductService
         }
     }
 
+    public static function getItemsLength()
+    {
+        global $database;
+
+        try {
+            $data = $database->getOne("SELECT COUNT(*) AS 'length' FROM products");
+            return $data["length"];
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
     public static function saveThumbnail($data)
     {
         global $database;
@@ -205,7 +217,7 @@ class ProductService
 
         try {
             $updatedProduct = ["thumbnail_id" => $data->media_id];
-            $database->update("products", $updatedProduct, "id = $id");
+            $database->update("products", $updatedProduct, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());

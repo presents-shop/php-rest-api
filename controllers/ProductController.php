@@ -34,12 +34,38 @@ class ProductController
         $id = $_GET["id"];
 
         $product = ProductService::findOne($id);
+        $product["media"] = self::getItemOptions($product,
+        [
+            "with_thumbnail" => $_GET["with_thumbnail"] ?? false,
+            "with_additional_images" => $_GET["with_additional_images"] ?? false,
+        ]);
 
         if (!$product) {
             Response::badRequest(["invalid_id" => "Този продукт не съществува"])->send();
         }
 
         Response::ok($product)->send();
+    }
+
+    public static function getItemOptions($product, $params)
+    {
+        $options = [];
+
+        if (!empty($params["with_thumbnail"]) && $product["thumbnail_id"]) {
+            $options["thumbnail"] = MediaService::findOne($product["thumbnail_id"]);
+        }
+
+        if (!empty($params["with_additional_images"]) && $product["additional_image_ids"]) {
+            $additionalImages = [];
+            
+            foreach($product["additional_image_ids"] as $id) {
+                $additionalImages[] = MediaService::findOne($id);
+            }
+
+            $options["additional_images"] = $additionalImages;
+        }
+
+        return $options;
     }
 
     public static function getItems()
@@ -50,8 +76,16 @@ class ProductController
         $offset = ($page - 1) * $limit;
 
         $products = ProductService::findAll($offset, $limit);
+        $length = ProductService::getItemsLength();
 
-        Response::ok($products)->send();
+        foreach($products as &$product) {
+            $product["media"] = self::getItemOptions($product, ["with_thumbnail" => true]);
+        }
+
+        Response::ok([
+            "items" => $products,
+            "length" => $length,
+        ])->send();
     }
 
     public static function saveThumbnail()
@@ -89,7 +123,7 @@ class ProductController
             Response::badRequest(["invalid_id" => "Този продукт не съществува"])->send();
         }
 
-        foreach($data->media_ids as $id) {
+        foreach ($data->media_ids as $id) {
             $image = MediaService::findOne($id);
 
             if (!$image) {

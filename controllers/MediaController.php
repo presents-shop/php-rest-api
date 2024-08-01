@@ -43,7 +43,16 @@ class MediaController
         $id = $_GET["id"] ?? null;
 
         $item = MediaService::findOne($id, "id");
-        
+
         Response::ok($item)->send();
+    }
+
+    public static function deleteItem()
+    {
+        $id = $_GET["id"] ?? null;
+
+        $deletionResult = MediaService::deleteItem($id);
+
+        Response::ok($deletionResult)->send();
     }
 }

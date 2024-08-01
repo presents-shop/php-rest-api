@@ -179,7 +179,7 @@ class MediaService
         if ($limit) {
             $sql .= " LIMIT $limit";
         }
-        
+
         if ($offset) {
             $sql .= " OFFSET $offset";
         }
@@ -188,6 +188,27 @@ class MediaService
             $mediaFiles = $database->getAll($sql, []);
 
             return $mediaFiles;
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
+    public static function deleteItem(string $id): object
+    {
+        global $database;
+
+        $item = self::findOne($id);
+
+        if (!$item) {
+            Response::badRequest("Невалидно ID на файла")->send();
+        }
+
+        if (file_exists($item["path"])) {
+            unlink($item["path"]);
+        }
+
+        try {
+            return $database->delete("media", "id = $id");
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
