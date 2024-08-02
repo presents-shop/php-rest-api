@@ -76,12 +76,13 @@ class CategoryController
     public static function getItems()
     {
         $page = $_GET["page"] ?? 1;
-        $limit = $_GET["limit"] ?? null;
+        $limit = $_GET["limit"] ?? 5;
+        $search = $_GET["search"] ?? null;
 
         $offset = ($page - 1) * $limit;
 
-        $categories = CategoryService::findAll($offset, $limit);
-        $length = CategoryService::getItemsLength();
+        $categories = CategoryService::findAll($offset, $limit, $search);
+        $length = CategoryService::getItemsLength($search);
 
         foreach($categories as &$category) {
             $category["media"] = self::getItemOptions($category, ["with_thumbnail" => true]);
@@ -90,6 +91,11 @@ class CategoryController
         Response::ok([
             "items" => $categories,
             "length" => $length,
+            "params" => [
+                "page" => intval($page),
+                "limit" => intval($limit),
+                "search" => $search,
+            ]
         ])->send();
     }
 

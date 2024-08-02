@@ -95,11 +95,15 @@ class CategoryService
         }
     }
 
-    public static function findAll($offset, $limit)
+    public static function findAll($offset, $limit, $search)
     {
         global $database;
 
         $sql = "SELECT * FROM categories";
+
+        if ($search) {
+            $sql .= " WHERE title LIKE '%$search%'";
+        }
 
         if ($limit) {
             $sql .= " LIMIT $limit";
@@ -128,13 +132,19 @@ class CategoryService
         }
     }
 
-    public static function getItemsLength()
+    public static function getItemsLength($search)
     {
         global $database;
 
+        $sql = "SELECT COUNT(*) AS 'length' FROM categories";
+
+        if ($search) {
+            $sql .= " WHERE title LIKE '%$search%'";
+        }
+
         try {
-            $data = $database->getOne("SELECT COUNT(*) AS 'length' FROM categories");
-            return $data["length"];
+            $data = $database->getOne($sql, []);
+            return $data["length"] ?? 0;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
