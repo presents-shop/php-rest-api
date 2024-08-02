@@ -6,5 +6,5 @@ $router->post("/admin/categories/save-additional-images", ["CategoryController",
 
 $router->delete("/admin/categories", ["CategoryController", "deleteItem"]);
 
-$router->get("/admin/categories", ["CategoryController", "getItem"]);
-$router->get("/admin/categories/all", ["CategoryController", "getItems"]);
+$router->get("/categories", ["CategoryController", "getItem"]);
+$router->get("/categories/all", ["CategoryController", "getItems"]);

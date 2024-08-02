@@ -35,9 +35,10 @@ class CategoryController
 
     public static function getItem()
     {
-        $id = $_GET["id"];
+        $column = $_GET["column"] ?? null;
+        $value = $_GET["value"] ?? null;
 
-        $category = CategoryService::findOne($id);
+        $category = CategoryService::findOne($value, $column);
 
         $category["media"] = self::getItemOptions($category,
         [
