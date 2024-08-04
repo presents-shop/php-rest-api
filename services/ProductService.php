@@ -110,7 +110,7 @@ class ProductService
         ];
 
         try {
-            $database->update("products", $newProduct, "id = $id");
+            $database->update("products", $newProduct, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -128,7 +128,7 @@ class ProductService
         ];
         
         try {
-            $database->update("products", $newProduct, "id = $id");
+            $database->update("products", $newProduct, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -146,7 +146,7 @@ class ProductService
         }
 
         try {
-            return $database->delete("products", "id = $id", []);
+            return $database->delete("products", "id = '$id'", []);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
@@ -232,7 +232,7 @@ class ProductService
 
         try {
             $updatedProduct = ["additional_image_ids" => json_encode($data->media_ids)];
-            $database->update("products", $updatedProduct, "id = $id");
+            $database->update("products", $updatedProduct, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -247,7 +247,7 @@ class ProductService
 
         try {
             $updatedProduct = ["category_id" => json_encode($data->category_id)];
-            $database->update("products", $updatedProduct, "id = $id");
+            $database->update("products", $updatedProduct, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());

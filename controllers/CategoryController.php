@@ -9,14 +9,12 @@ class CategoryController
 
         $data = getJSONData();
 
-        CategoryValidation::saveItem($data);
-
         $id = $data->id ?? null;
 
         if (!$id) {
-            $category = CategoryService::create(getJSONData());
+            $category = CategoryService::create($data);
         } else {
-            $category = CategoryService::update($id, getJSONData());
+            $category = CategoryService::update($id, $data);
         }
 
         Response::created($category)->send();
@@ -78,10 +76,11 @@ class CategoryController
         $page = $_GET["page"] ?? 1;
         $limit = $_GET["limit"] ?? 5;
         $search = $_GET["search"] ?? null;
+        $sort = $_GET["sort"] ?? null;
 
         $offset = ($page - 1) * $limit;
 
-        $categories = CategoryService::findAll($offset, $limit, $search);
+        $categories = CategoryService::findAll($offset, $limit, $search, $sort);
         $length = CategoryService::getItemsLength($search);
 
         foreach($categories as &$category) {
@@ -95,6 +94,7 @@ class CategoryController
                 "page" => intval($page),
                 "limit" => intval($limit),
                 "search" => $search,
+                "sort" => $sort,
             ]
         ])->send();
     }

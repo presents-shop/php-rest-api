@@ -4,18 +4,21 @@ class CategoryService
 {
     public static function create($data)
     {
-        $category = self::findOne($data->slug, "slug");
-
-        if ($category) {
-            Response::badRequest(["dublicate_slug" => "Този адрес вече е използван за друга категория."])->send();
+        if (!empty($data->slug)) {
+            $category = self::findOne($data->slug, "slug");
+    
+            if ($category) {
+                Response::badRequest("Този адрес вече е използван за друга категория.")->send();
+            }
         }
 
         $metaOptions = json_encode($data->meta_options) ?? [];
 
         $newCategory = [
-            "title" => $data->title,
-            "slug" => $data->slug,
-            "description" => $data->description,
+            "title" => $data->title ?? null,
+            "slug" => $data->slug ?? null,
+            "thumbnail_id" => $data->thumbnail_id ?? null,
+            "description" => $data->description ?? null,
             "meta_options" => $metaOptions,
         ];
 
@@ -59,14 +62,26 @@ class CategoryService
         $category = self::findOne($id);
 
         if (!$category) {
-            Response::badRequest(["invalid_id" => "Тази категория не съществува"])->send();
+            Response::badRequest("Тази категория не съществува")->send();
+        }
+
+        if (empty($data->slug)) {
+            Response::badRequest("Не можете да запазите категорията с празен URL адрес.")->send();
+        }
+
+        $categoryBySlug = self::findOne($data->slug, "slug");
+
+        if ($categoryBySlug && $categoryBySlug["id"] != $data->id) {
+            Response::badRequest("Вече съществува друга категорията с този URL адрес.")->send();
         }
 
         $metaOptions = json_encode($data->meta_options) ?? [];
 
         $newCategory = [
-            "title" => $data->title,
-            "description" => $data->description,
+            "title" => $data->title ?? null,
+            "slug" => $data->slug ?? null,
+            "description" => $data->description ?? null,
+            "thumbnail_id" => $data->thumbnail_id ?? null,
             "meta_options" => $metaOptions,
         ];
 
@@ -95,11 +110,20 @@ class CategoryService
         }
     }
 
-    public static function findAll($offset, $limit, $search)
+    public static function findAll($offset, $limit, $search, $sort)
     {
         global $database;
 
         $sql = "SELECT * FROM categories";
+
+        if ($sort == "asc" || $sort == "desc") {
+            $sql .= " ORDER BY title $sort";
+        }
+
+        if ($sort == "new" || $sort == "old") {
+            $method = $sort == "new" ? "desc" : "asc";
+            $sql .= " ORDER BY id $method";
+        }
 
         if ($search) {
             $sql .= " WHERE title LIKE '%$search%'";
