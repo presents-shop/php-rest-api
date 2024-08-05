@@ -30,12 +30,22 @@ class MediaController
     {
         $page = $_GET["page"] ?? 1;
         $limit = $_GET["limit"] ?? null;
+        $sort = $_GET["sort"] ?? null;
 
         $offset = ($page - 1) * $limit;
 
-        $mediaFiles = MediaService::findAll($offset, $limit);
-
-        Response::ok($mediaFiles)->send();
+        $mediaItems = MediaService::findAll($offset, $limit, $sort);
+        $length = MediaService::getItemsLength();
+        
+        Response::ok([
+            "items" => $mediaItems,
+            "length" => $length,
+            "params" => [
+                "page" => intval($page),
+                "limit" => intval($limit),
+                "sort" => $sort,
+            ]
+        ])->send();
     }
 
     public static function getItem()

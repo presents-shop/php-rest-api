@@ -170,11 +170,16 @@ class MediaService
         }
     }
 
-    public static function findAll($offset, $limit)
+    public static function findAll($offset, $limit, $sort)
     {
         global $database;
 
         $sql = "SELECT * FROM media";
+
+        if ($sort == "new" || $sort == "old") {
+            $method = $sort == "new" ? "desc" : "asc";
+            $sql .= " ORDER BY id $method";
+        }
 
         if ($limit) {
             $sql .= " LIMIT $limit";
@@ -188,6 +193,20 @@ class MediaService
             $mediaFiles = $database->getAll($sql, []);
 
             return $mediaFiles;
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
+        }
+    }
+
+    public static function getItemsLength()
+    {
+        global $database;
+
+        $sql = "SELECT COUNT(*) AS 'length' FROM media";
+
+        try {
+            $data = $database->getOne($sql, []);
+            return $data["length"] ?? 0;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }

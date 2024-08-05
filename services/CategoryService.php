@@ -173,6 +173,7 @@ class CategoryService
             throw new Exception($ex->getMessage());
         }
     }
+    
     public static function saveThumbnail($data)
     {
         global $database;
