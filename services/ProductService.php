@@ -165,11 +165,24 @@ class ProductService
         }
     }
 
-    public static function findAll($offset, $limit)
+    public static function findAll($offset, $limit, $search, $sort)
     {
         global $database;
 
         $sql = "SELECT * FROM products";
+
+        if ($sort == "asc" || $sort == "desc") {
+            $sql .= " ORDER BY title $sort";
+        }
+
+        if ($sort == "new" || $sort == "old") {
+            $method = $sort == "new" ? "desc" : "asc";
+            $sql .= " ORDER BY id $method";
+        }
+
+        if ($search) {
+            $sql .= " WHERE title LIKE '%$search%'";
+        }
 
         if ($limit) {
             $sql .= " LIMIT $limit";

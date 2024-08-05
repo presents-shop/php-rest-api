@@ -75,11 +75,13 @@ class ProductController
     public static function getItems()
     {
         $page = $_GET["page"] ?? 1;
-        $limit = $_GET["limit"] ?? null;
+        $limit = $_GET["limit"] ?? 5;
+        $search = $_GET["search"] ?? null;
+        $sort = $_GET["sort"] ?? null;
 
         $offset = ($page - 1) * $limit;
 
-        $products = ProductService::findAll($offset, $limit);
+        $products = ProductService::findAll($offset, $limit, $search, $sort);
         $length = ProductService::getItemsLength();
 
         foreach($products as &$product) {
@@ -89,6 +91,12 @@ class ProductController
         Response::ok([
             "items" => $products,
             "length" => $length,
+            "params" => [
+                "page" => intval($page),
+                "limit" => intval($limit),
+                "search" => $search,
+                "sort" => $sort,
+            ]
         ])->send();
     }
 
