@@ -8,10 +8,12 @@ class ProductService
 {
     public static function create($data)
     {
-        $product = self::findOne($data->slug, "slug");
-
-        if ($product) {
-            Response::badRequest(["dublicate_slug" => "Този адрес вече е използван за друг продукт."])->send();
+        if (!empty($data->slug)) {
+            $product = self::findOne($data->slug, "slug");
+    
+            if ($product) {
+                Response::badRequest("Този адрес вече е използван за друг продукт.")->send();
+            }
         }
 
         $metaOptions = json_encode($data->meta_options) ?? [];
@@ -21,13 +23,15 @@ class ProductService
 
         $newProduct = [
             "id" => Uuid::v4(),
-            "title" => $data->title,
-            "slug" => $data->slug,
+            "title" => $data->title ?? null,
+            "slug" => $data->slug ?? null,
             "short_description" => $data->short_description ?? null,
             "description" => $data->description ?? null,
-            "original_price" => $data->original_price,
+            "original_price" => $data->original_price ?? null,
             "selling_price" => $data->selling_price ?? null,
-            "quantity" => $data->quantity,
+            "quantity" => $data->quantity ?? null,
+            "thumbnail_id" => $data->thumbnail_id ?? null,
+            "additional_image_ids" => json_encode($data->additional_image_ids ?? []),
             "meta_options" => $metaOptions,
             "twitter_options" => $twitterOptions,
             "og_options" => $ogOptions,
@@ -38,7 +42,7 @@ class ProductService
 
         try {
             $database->insert("products", $newProduct);
-            return self::findOne($database->lastInsertedId());
+            return self::findOne($newProduct["id"]);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
@@ -84,10 +88,16 @@ class ProductService
     {
         global $database;
 
-        $category = self::findOne($id);
+        $product = self::findOne($id);
 
-        if (!$category) {
-            Response::badRequest(["invalid_id" => "този продукт не съществува"])->send();
+        if (!$product) {
+            Response::badRequest("Този продукт не съществува")->send();
+        }
+
+        $productBySlug = self::findOne($data->slug, "slug");
+
+        if ($productBySlug && $productBySlug["id"] != $data->id) {
+            Response::badRequest("Вече съществува друг продукт с този URL адрес.")->send();
         }
 
         $metaOptions = json_encode($data->meta_options) ?? [];
@@ -96,13 +106,16 @@ class ProductService
         $productOptions = json_encode($data->product_options) ?? [];
 
         $newProduct = [
-            "title" => $data->title,
+            "title" => $data->title ?? null,
+            "slug" => $data->slug ?? null,
             "description" => $data->description ?? null,
             "short_description" => $data->short_description ?? null,
-            "original_price" => $data->original_price,
+            "original_price" => $data->original_price ?? null,
             "selling_price" => $data->selling_price ?? null,
-            "quantity" => $data->quantity,
+            "quantity" => $data->quantity ?? null,
             "category_id" => $data->category_id ?? null,
+            "thumbnail_id" => $data->thumbnail_id ?? null,
+            "additional_image_ids" => json_encode($data->additional_image_ids ?? []),
             "meta_options" => $metaOptions,
             "twitter_options" => $twitterOptions,
             "og_options" => $ogOptions,

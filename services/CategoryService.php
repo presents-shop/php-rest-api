@@ -66,7 +66,7 @@ class CategoryService
         }
 
         if (empty($data->slug)) {
-            Response::badRequest("Не можете да запазите категорията с празен URL адрес.")->send();
+            Response::badRequest("Не можете да запазите категория с празен URL адрес.")->send();
         }
 
         $categoryBySlug = self::findOne($data->slug, "slug");

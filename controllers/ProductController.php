@@ -7,17 +7,21 @@ class ProductController
     {
         $data = getJSONData();
 
-        ProductValidation::saveItem($data);
-
         $id = $data->id ?? null;
-
+        
         if (!$id) {
-            $product = ProductService::create(getJSONData());
+            $product = ProductService::create($data);
         } else {
-            $product = ProductService::update($id, getJSONData());
+            $product = ProductService::update($id, $data);
         }
 
-        Response::created($product)->send();
+        $product["media"] = self::getItemOptions($product,
+        [
+            "with_thumbnail" => true,
+            "with_additional_images" => true,
+        ]);
+
+        Response::ok($product)->send();
     }
 
     public static function deleteItem()
