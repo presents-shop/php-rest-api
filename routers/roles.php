@@ -5,4 +5,4 @@ $router->get("/roles", ["RoleController", "getItems"]);
 
 $router->post("/admin/roles", ["RoleController", "saveItem"]);
 
-$router->delete("/admin/roles", ["RoleController", "deleteItem"]);
+$router->delete("/roles/:id", ["RoleController", "deleteItem"]);

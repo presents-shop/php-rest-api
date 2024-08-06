@@ -22,9 +22,9 @@ class RoleController
     public static function getItem()
     {
         $column = $_GET["column"] ?? null;
-        $value = $_GET["value"] ?? null;
+        $id = $_GET["id"] ?? null;
 
-        $role = RoleService::findOne($value, $column);
+        $role = RoleService::findOne($id, $column);
 
         if (!$role) {
             Response::badRequest("Тази роля не съществува.")->send();
