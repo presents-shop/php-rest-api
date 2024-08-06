@@ -35,14 +35,14 @@ class PermissionController
 
     public static function getItems()
     {
-        $page = $_GET["page"] ?? 1;
-        $limit = $_GET["limit"] ?? 5;
+        $page = $_GET["page"] ?? null;
+        $limit = $_GET["limit"] ?? null;
         $search = $_GET["search"] ?? null;
         $sort = $_GET["sort"] ?? null;
 
-        $offset = ($page - 1) * $limit;
+        if ($page && $limit) $offset = ($page - 1) * $limit;
 
-        $permissions = PermissionService::findAll($offset, $limit, $search, $sort);
+        $permissions = PermissionService::findAll($offset ?? null, $limit, $search, $sort);
         $length = PermissionService::getItemsLength($search);
 
         Response::ok([

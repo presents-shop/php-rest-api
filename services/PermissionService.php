@@ -104,6 +104,10 @@ class PermissionService
 
         $sql = "SELECT * FROM permissions";
 
+        if ($search) {
+            $sql .= " WHERE name LIKE '%$search%' OR label LIKE '%$search%'";
+        }
+
         if ($sort == "asc" || $sort == "desc") {
             $sql .= " ORDER BY label $sort";
         }
@@ -111,10 +115,6 @@ class PermissionService
         if ($sort == "new" || $sort == "old") {
             $method = $sort == "new" ? "desc" : "asc";
             $sql .= " ORDER BY id $method";
-        }
-
-        if ($search) {
-            $sql .= " WHERE label LIKE '%$search%'";
         }
 
         if ($limit) {
