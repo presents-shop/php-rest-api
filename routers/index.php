@@ -16,5 +16,7 @@ require "media.php";
 require "cities.php";
 require "cart.php";
 require "orders.php";
+require "roles.php";
+require "permissions.php";
 
 $router->route($uri, $method);
