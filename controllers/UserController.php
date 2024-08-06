@@ -69,4 +69,28 @@ class UserController
         unset($_SESSION["token"]);
         Response::ok(true)->send();
     }
+
+    public static function getAll()
+    {
+        $page = $_GET["page"] ?? 1;
+        $limit = $_GET["limit"] ?? 5;
+        $search = $_GET["search"] ?? null;
+        $sort = $_GET["sort"] ?? null;
+
+        $offset = ($page - 1) * $limit;
+
+        $users = UserService::findAll($offset, $limit, $search, $sort);
+        $length = UserService::getItemsLength($search);
+
+        Response::ok([
+            "items" => $users,
+            "length" => $length,
+            "params" => [
+                "page" => intval($page),
+                "limit" => intval($limit),
+                "search" => $search,
+                "sort" => $sort,
+            ]
+        ])->send();
+    }
 }

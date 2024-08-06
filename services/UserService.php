@@ -88,12 +88,35 @@ class UserService
         }
     }
 
-    public static function findAll()
+    public static function findAll($offset, $limit, $search, $sort)
     {
         global $database;
 
+        $sql = "SELECT * FROM users";
+
+        if ($sort == "asc" || $sort == "desc") {
+            $sql .= " ORDER BY email $sort";
+        }
+
+        if ($sort == "new" || $sort == "old") {
+            $method = $sort == "new" ? "desc" : "asc";
+            $sql .= " ORDER BY id $method";
+        }
+
+        if ($search) {
+            $sql .= " WHERE title LIKE '%$search%'";
+        }
+
+        if ($limit) {
+            $sql .= " LIMIT $limit";
+        }
+
+        if ($offset) {
+            $sql .= " OFFSET $offset";
+        }
+
         try {
-            $users = $database->getAll("SELECT * FROM users");
+            $users = $database->getAll($sql);
 
             foreach ($users as &$user) {
                 unset($user["password"]);
@@ -102,6 +125,24 @@ class UserService
             return $users;
         } catch (Exception $ex) {
             Response::badRequest("Find all users error: " . $ex->getMessage())->send();
+        }
+    }
+
+    public static function getItemsLength($search)
+    {
+        global $database;
+
+        $sql = "SELECT COUNT(*) AS 'length' FROM users";
+
+        if ($search) {
+            $sql .= " WHERE email LIKE '%$search%'";
+        }
+
+        try {
+            $data = $database->getOne($sql, []);
+            return $data["length"] ?? 0;
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage());
         }
     }
 
@@ -116,7 +157,7 @@ class UserService
         $tokenString = TokenService::generateToken();
 
         self::sendForgotPassword($email, $tokenString);
-        
+
         return true;
     }
 
@@ -128,7 +169,7 @@ class UserService
 
         $token = explode(" ", $_SERVER["HTTP_AUTHORIZATION"])[1] ?? null;
         // $token = $_SESSION["token"] ?? null;
-        
+
         try {
             if (!$token) {
                 return false;
@@ -228,7 +269,8 @@ class UserService
         $mail->send();
     }
 
-    public static function sendForgotPassword($email, $token) {
+    public static function sendForgotPassword($email, $token)
+    {
         $variables = [
             "host" => WEBSITE_LINK,
             "reset_link" => $token,
