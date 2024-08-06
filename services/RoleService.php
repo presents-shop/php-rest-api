@@ -119,6 +119,10 @@ class RoleService
 
         $sql = "SELECT * FROM roles";
 
+        if ($search) {
+            $sql .= " WHERE name LIKE '%$search%' OR label LIKE '%$search%'";
+        }
+
         if ($sort == "asc" || $sort == "desc") {
             $sql .= " ORDER BY label $sort";
         }
@@ -126,10 +130,6 @@ class RoleService
         if ($sort == "new" || $sort == "old") {
             $method = $sort == "new" ? "desc" : "asc";
             $sql .= " ORDER BY id $method";
-        }
-
-        if ($search) {
-            $sql .= " WHERE label LIKE '%$search%'";
         }
 
         if ($limit) {
@@ -155,7 +155,7 @@ class RoleService
         $sql = "SELECT COUNT(*) AS 'length' FROM roles";
 
         if ($search) {
-            $sql .= " WHERE label LIKE '%$search%'";
+            $sql .= " WHERE name LIKE '%$search%' OR label LIKE '%$search%'";
         }
 
         try {

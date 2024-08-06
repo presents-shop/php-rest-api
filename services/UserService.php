@@ -94,6 +94,10 @@ class UserService
 
         $sql = "SELECT * FROM users";
 
+        if ($search) {
+            $sql .= " WHERE phone LIKE '%$search%' OR email LIKE '%$search%'";
+        }
+
         if ($sort == "asc" || $sort == "desc") {
             $sql .= " ORDER BY email $sort";
         }
@@ -101,10 +105,6 @@ class UserService
         if ($sort == "new" || $sort == "old") {
             $method = $sort == "new" ? "desc" : "asc";
             $sql .= " ORDER BY id $method";
-        }
-
-        if ($search) {
-            $sql .= " WHERE title LIKE '%$search%'";
         }
 
         if ($limit) {
@@ -135,7 +135,7 @@ class UserService
         $sql = "SELECT COUNT(*) AS 'length' FROM users";
 
         if ($search) {
-            $sql .= " WHERE email LIKE '%$search%'";
+            $sql .= " WHERE email LIKE '%$search%' OR phone LIKE '%$search%'";
         }
 
         try {
