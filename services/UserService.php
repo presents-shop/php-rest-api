@@ -16,10 +16,7 @@ class UserService
 
         $passwordHash = password_hash($data->password, PASSWORD_DEFAULT);
 
-        $options = json_encode([
-            "first_name" => $data->first_name,
-            "last_name" => $data->last_name
-        ]);
+        $options = json_encode($data->options ?? []);
 
         $id = Uuid::v4();
         $token = TokenService::generateToken();
@@ -27,7 +24,7 @@ class UserService
         $newUser = [
             "id" => $id,
             "email" => $data->email,
-            "phone" => $data->phone,
+            "phone" => $data->phone ?? null,
             "password" => $passwordHash,
             "options" => $options,
             "token" => $token
@@ -38,7 +35,7 @@ class UserService
         try {
             $database->insert("users", $newUser);
 
-            $user = self::findOne($id);
+            $user = self::findOne($id, "id", "*", true);
             return $user;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
@@ -62,6 +59,25 @@ class UserService
         ]);
 
         return $token;
+    }
+
+    public static function updateUser($id, $data)
+    {
+        $user = self::findOne($id);
+
+        if (!$user) {
+            Response::badRequest("Този потребител не съществува.")->send();
+        }
+
+        $newData = [
+            "phone" => $data->phone,
+            "options" => json_encode($data->options ?? []),
+        ];
+
+        global $database;
+        $database->update("users", $newData, "id = '$id'");
+
+        return self::findOne($id);
     }
 
     public static function findOne($value, $column = "id", $fields = "*", $withPassword = false)

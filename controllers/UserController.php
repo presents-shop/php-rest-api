@@ -7,13 +7,16 @@ class UserController
     {
         $data = getJSONData();
 
-        UserValidation::register($data);
-
         $newUser = UserService::register($data);
 
-        UserService::sendVerifyEmail($newUser["email"], $newUser["token"]);
+        // UserService::sendVerifyEmail($newUser["email"], $newUser["token"]);
 
-        Response::created($newUser)->send();
+        $token = JsonWebToken::generateToken([
+            "user_id" => $newUser["id"],
+            "password" => $newUser["password"]
+        ]);
+
+        Response::created(["token" => $token])->send();
     }
 
     public static function login()
@@ -68,6 +71,19 @@ class UserController
     {
         unset($_SESSION["token"]);
         Response::ok(true)->send();
+    }
+
+    public static function updateUser()
+    {
+        $user = UserService::isAuthenticated();
+
+        if (!$user) {
+            Response::unauthorized("Не сте оторизиран да достъпите този ресурс.")->send();
+        }
+
+        $updatedUser = UserService::updateUser($user["id"], getJSONData());
+
+        Response::ok($updatedUser)->send();
     }
 
     public static function getAll()
