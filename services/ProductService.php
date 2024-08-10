@@ -82,14 +82,14 @@ class ProductService
 
         $product = self::findOne($data->slug, "slug");
 
-        if ($product) {
+        if ($product && $product["id"] != $data->id) {
             Response::badRequest("Този адрес вече е използван за друг продукт.")->send();
             return false;
         }
 
         $product = self::findOne($data->sku, "sku");
 
-        if ($product) {
+        if ($product && $product["id"] != $data->id) {
             Response::badRequest("Този код вече е използван за друг продукт.")->send();
             return false;
         }
