@@ -7,19 +7,40 @@ class ProductController
     {
         $data = getJSONData();
 
-        $id = $data->id ?? null;
-        
-        if (!$id) {
-            $product = ProductService::create($data);
-        } else {
-            $product = ProductService::update($id, $data);
+        $error = ProductValidation::saveItem($data);
+
+        if (is_string($error)) {
+            Response::badRequest($error)->send();
+            return;
         }
 
-        $product["media"] = self::getItemOptions($product,
-        [
+        $id = isset($data->id) ? $data->id : null;
+
+        if (empty($id) || !is_string($id)) {
+            Response::badRequest("Моля, генерирайте уникален идентификатор на продукта.")->send();
+            return;
+        }
+
+        $product = ProductService::findOne($id);
+
+        if (empty($product)) {
+            $product = ProductService::create($data);
+            if (!$product) {
+                Response::serverError("Грешка при създаване продукта.")->send();
+            }
+        } else {
+            $product = ProductService::update($id, $data);
+            if (!$product) {
+                Response::serverError("Грешка при редактиране на продукта.")->send();
+            }
+        }
+
+        $params = [
             "with_thumbnail" => true,
             "with_additional_images" => true,
-        ]);
+        ];
+
+        $product["media"] = self::getItemOptions($product, $params);
 
         Response::ok($product)->send();
     }
@@ -35,18 +56,26 @@ class ProductController
 
     public static function getItem()
     {
-        $id = $_GET["id"];
+        $id = $_GET["id"] ?? null;
+
+        if (empty($id)) {
+            Response::badRequest("Невалиден идентификатор.")->send();
+            return;
+        }
 
         $product = ProductService::findOne($id);
-        $product["media"] = self::getItemOptions($product,
-        [
-            "with_thumbnail" => $_GET["with_thumbnail"] ?? false,
-            "with_additional_images" => $_GET["with_additional_images"] ?? false,
-        ]);
 
         if (!$product) {
-            Response::badRequest(["invalid_id" => "Този продукт не съществува"])->send();
+            Response::badRequest("Този продукт не съществува.")->send();
+            return;
         }
+
+        $params = [
+            "with_thumbnail" => isset($_GET["with_thumbnail"]) ? filter_var($_GET["with_thumbnail"], FILTER_VALIDATE_BOOLEAN) : false,
+            "with_additional_images" => isset($_GET["with_additional_images"]) ? filter_var($_GET["with_additional_images"], FILTER_VALIDATE_BOOLEAN) : false,
+        ];
+
+        $product["media"] = self::getItemOptions($product, $params);
 
         Response::ok($product)->send();
     }
@@ -74,26 +103,33 @@ class ProductController
 
     public static function getItems()
     {
-        $page = $_GET["page"] ?? 1;
-        $limit = $_GET["limit"] ?? 5;
-        $search = $_GET["search"] ?? null;
-        $sort = $_GET["sort"] ?? null;
+        $page = isset($_GET["page"]) ? $_GET["page"] : 1;
+        $limit = isset($_GET["limit"]) ? $_GET["limit"] : 5;
+        $search = isset($_GET["search"]) ? $_GET["search"] : '';
+        $sort = isset($_GET["sort"]) ? $_GET["sort"] : '';
+
+        if ($page < 1) $page = 1;
+        if ($limit < 1) $limit = 5;
 
         $offset = ($page - 1) * $limit;
 
         $products = ProductService::findAll($offset, $limit, $search, $sort);
         $length = ProductService::getItemsLength();
 
-        foreach($products as &$product) {
-            $product["media"] = self::getItemOptions($product, ["with_thumbnail" => true]);
+        foreach ($products as &$product) {
+            $params = [
+                "with_thumbnail" => true,
+            ];
+
+            $product["media"] = self::getItemOptions($product, $params);
         }
 
         Response::ok([
             "items" => $products,
             "length" => $length,
             "params" => [
-                "page" => intval($page),
-                "limit" => intval($limit),
+                "page" => $page,
+                "limit" => $limit,
                 "search" => $search,
                 "sort" => $sort,
             ]

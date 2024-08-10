@@ -2,23 +2,29 @@
 
 class ProductValidation
 {
-    public static function saveItem($data): void
+    public static function saveItem($data)
     {
-        if (empty($data->title)) {
-            Response::badRequest("Заглавието не може да бъде по-малко от 3 знака")->send();
+        if (empty($data->name) || strlen($data->name) < 3) {
+            return "Заглавието не може да бъде по-малко от 3 знака.";
         }
         
         if (empty($data->slug)) {
-            Response::badRequest("Въведете URL адрес на продукта")->send();
+            return "Въведете URL адрес на продукта.";
         }
-        
-        if (empty($data->original_price)) {
-            Response::badRequest("Въведете цена на продукта")->send();
+
+        if (empty($data->sku)) {
+            return "Въведете уникален код на продукта.";
         }
-        
-        if (!isset($data->quantity)) {
-            Response::badRequest("Въведете наличното количество от продукта")->send();
+
+        if (empty($data->weight) || !is_numeric($data->weight) || $data->weight <= 0) {
+            return "Въведете теглото на продукта.";
         }
+
+        if (empty($data->dimensions) || !is_string($data->dimensions)) {
+            return "Въведете размерите на продукта (дължина, ширина, височина).";
+        }
+
+        return true;
     }
     
     public static function saveThumbnail($data): void
