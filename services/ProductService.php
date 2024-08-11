@@ -44,12 +44,8 @@ class ProductService
 
         global $database;
 
-        try {
-            $database->insert("products", $newProduct);
-            return self::findOne($newProduct["id"]);
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
-        }
+        $database->insert("products", $newProduct);
+        return self::findOne($newProduct["id"]);
     }
 
     public static function findOne($value, $column = "id", $fields = "*")
@@ -113,12 +109,8 @@ class ProductService
             "options" => json_encode($data->options ?? []),
         ];
 
-        try {
-            $database->update("products", $updatedProduct, "id = '$id'");
-            return self::findOne($id);
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
-        }
+        $database->update("products", $updatedProduct, "id = '$id'");
+        return self::findOne($id);
     }
 
     public static function decreaseQuantity($id, $quantity)
@@ -145,73 +137,72 @@ class ProductService
 
         $product = self::findOne($id);
 
-        if (!$product) {
-            Response::badRequest(["invalid_id" => "Този продукт не съществува"])->send();
+        if (empty($product)) {
+            Response::badRequest("Невалиден идентификатор на продукт")->send();
         }
 
-        try {
-            return $database->delete("products", "id = '$id'", []);
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
-        }
+        return $database->delete("products", "id = '$id'", []);
     }
 
-    public static function findAll($offset, $limit, $search, $sort)
+    public static function findAll($offset, $limit, $search, $sort, $categoryId)
     {
         global $database;
 
-        $sql = "SELECT * FROM products";
+        $query = self::buildSQLQueryForFindAll($offset, $limit, $search, $sort, $categoryId);
 
-        if ($sort == "asc" || $sort == "desc") {
-            $sql .= " ORDER BY title $sort";
+        $products = $database->getAll($query["sql"], $query["params"]);
+
+        foreach ($products as &$product) {
+            if (!empty($product["options"])) {
+                $product["options"] = json_decode($product["options"]);
+                $product["additional_image_ids"] = json_decode($product["additional_image_ids"]);
+            }
         }
 
-        if ($sort == "new" || $sort == "old") {
-            $method = $sort == "new" ? "desc" : "asc";
+        return $products;
+    }
+
+    public static function buildSQLQueryForFindAll($offset, $limit, $search, $sort, $categoryId)
+    {
+        $sql = "SELECT * FROM products";
+
+        $params = [];
+        $conditions = [];
+
+        // Проверка за търсене
+        if ($search) {
+            $conditions[] = "name LIKE '%$search%'";
+        }
+
+        // Проверка за categoryId
+        if ($categoryId) {
+            $conditions[] = "parent_id = $categoryId";
+        }
+
+        // Добавяне на условията към заявката
+        if (count($conditions) > 0) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        // Проверка за сортиране
+        if ($sort == "asc" || $sort == "desc") {
+            $sql .= " ORDER BY name $sort";
+        } elseif ($sort == "new" || $sort == "old") {
+            $method = $sort == "new" ? "DESC" : "ASC";
             $sql .= " ORDER BY id $method";
         }
 
-        if ($search) {
-            $sql .= " WHERE title LIKE '%$search%'";
-        }
-
+        // Ограничаване на резултатите
         if ($limit) {
             $sql .= " LIMIT $limit";
         }
 
+        // Задаване на offset
         if ($offset) {
             $sql .= " OFFSET $offset";
         }
 
-        try {
-            $products = $database->getAll($sql, []);
-
-            foreach ($products as &$product) {
-                if (!empty($product["meta_options"])) {
-                    $product["meta_options"] = json_decode($product["meta_options"]);
-                }
-
-                if (!empty($product["product_options"])) {
-                    $product["product_options"] = json_decode($product["product_options"]);
-                }
-
-                if (!empty($product["og_options"])) {
-                    $product["og_options"] = json_decode($product["og_options"]);
-                }
-
-                if (!empty($product["twitter_options"])) {
-                    $product["twitter_options"] = json_decode($product["twitter_options"]);
-                }
-
-                if (!empty($product["additional_image_ids"])) {
-                    $product["additional_image_ids"] = json_decode($product["additional_image_ids"] ?? []);
-                }
-            }
-
-            return $products;
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
-        }
+        return ["sql" => $sql, "params" => $params];
     }
 
     public static function getItemsLength()

@@ -1,52 +1,20 @@
 <?php
 
+require "utils/ProductUtil.php";
+require "managers/products/SaveItemProductManager.php";
+
 class ProductController
 {
     // GET METHODS
-    public static function saveItem()
-    {
+    public static function saveItem() {
         $data = getJSONData();
-
-        $error = ProductValidation::saveItem($data);
-
-        if (is_string($error)) {
-            Response::badRequest($error)->send();
-            return;
-        }
-
-        $id = isset($data->id) ? $data->id : null;
-
-        if (empty($id) || !is_string($id)) {
-            Response::badRequest("Моля, генерирайте уникален идентификатор на продукта.")->send();
-            return;
-        }
-
-        $product = ProductService::findOne($id);
-
-        if (empty($product)) {
-            $product = ProductService::create($data);
-            if (!$product) {
-                Response::serverError("Грешка при създаване продукта.")->send();
-            }
-        } else {
-            $product = ProductService::update($id, $data);
-            if (!$product) {
-                Response::serverError("Грешка при редактиране на продукта.")->send();
-            }
-        }
-
-        $params = [
-            "with_thumbnail" => true,
-            "with_additional_images" => true,
-        ];
-
-        $product["media"] = self::getItemOptions($product, $params);
-
-        Response::ok($product)->send();
+        SaveItemProductManager::saveItem($data);
     }
 
     public static function deleteItem()
     {
+        AuthGuard::authenticated();
+
         $id = $_GET["id"];
 
         $result = ProductService::delete($id);
@@ -75,45 +43,27 @@ class ProductController
             "with_additional_images" => isset($_GET["with_additional_images"]) ? filter_var($_GET["with_additional_images"], FILTER_VALIDATE_BOOLEAN) : false,
         ];
 
-        $product["media"] = self::getItemOptions($product, $params);
+        $product["media"] = ProductUtil::getItemOptions($product, $params);
 
         Response::ok($product)->send();
-    }
-
-    public static function getItemOptions($product, $params)
-    {
-        $options = [];
-
-        if (!empty($params["with_thumbnail"]) && $product["thumbnail_id"]) {
-            $options["thumbnail"] = MediaService::findOne($product["thumbnail_id"]);
-        }
-
-        if (!empty($params["with_additional_images"]) && $product["additional_image_ids"]) {
-            $additionalImages = [];
-            
-            foreach($product["additional_image_ids"] as $id) {
-                $additionalImages[] = MediaService::findOne($id);
-            }
-
-            $options["additional_images"] = $additionalImages;
-        }
-
-        return $options;
     }
 
     public static function getItems()
     {
         $page = isset($_GET["page"]) ? $_GET["page"] : 1;
         $limit = isset($_GET["limit"]) ? $_GET["limit"] : 5;
-        $search = isset($_GET["search"]) ? $_GET["search"] : '';
-        $sort = isset($_GET["sort"]) ? $_GET["sort"] : '';
+        $search = isset($_GET["search"]) ? $_GET["search"] : "";
+        $sort = isset($_GET["sort"]) ? $_GET["sort"] : "";
+        $categoryId = isset($_GET["category_id"]) ? $_GET["category_id"] : "";
 
-        if ($page < 1) $page = 1;
-        if ($limit < 1) $limit = 5;
+        if ($page < 1)
+            $page = 1;
+        if ($limit < 1)
+            $limit = 5;
 
         $offset = ($page - 1) * $limit;
 
-        $products = ProductService::findAll($offset, $limit, $search, $sort);
+        $products = ProductService::findAll($offset, $limit, $search, $sort, $categoryId);
         $length = ProductService::getItemsLength();
 
         foreach ($products as &$product) {
@@ -121,7 +71,7 @@ class ProductController
                 "with_thumbnail" => true,
             ];
 
-            $product["media"] = self::getItemOptions($product, $params);
+            $product["media"] = ProductUtil::getItemOptions($product, $params);
         }
 
         Response::ok([
