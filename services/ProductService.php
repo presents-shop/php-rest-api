@@ -59,21 +59,17 @@ class ProductService
         $sql = "SELECT $fields FROM products WHERE $column = :$column";
         $params = [":$column" => $value];
 
-        try {
-            $product = $database->getOne($sql, $params);
+        $product = $database->getOne($sql, $params);
 
-            if (!empty($product["options"])) {
-                $product["options"] = json_decode($product["options"]);
-            }
-
-            if (!empty($product["additional_image_ids"])) {
-                $product["additional_image_ids"] = json_decode($product["additional_image_ids"]);
-            }
-
-            return $product;
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
+        if (!empty($product["options"])) {
+            $product["options"] = json_decode($product["options"]);
         }
+
+        if (!empty($product["additional_image_ids"])) {
+            $product["additional_image_ids"] = json_decode($product["additional_image_ids"]);
+        }
+
+        return $product;
     }
 
     public static function update($id, $data)

@@ -4,19 +4,15 @@ class CategoryValidation
 {
     public static function saveItem($data)
     {
-        $errors = [];
-        
         if (empty($data->title)) {
-            $errors["title"] = "Заглавието не може да бъде по-малко от 3 знака";
+            return "Заглавието не може да бъде по-малко от 3 знака";
         }
         
         if (empty($data->slug)) {
-            $errors["slug"] = "Въведете URL адрес на категорията";
+            return "Въведете URL адрес на категорията";
         }
-
-        if (count($errors) > 0) {
-            Response::badRequest($errors)->send();
-        }
+        
+        return true;
     }
 
     public static function saveThumbnail($data)

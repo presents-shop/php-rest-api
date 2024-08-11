@@ -3,6 +3,8 @@
 require "framework/Database.php";
 require "framework/Autoloader.php";
 
+require "setup/global-errors.php";
+
 session_start();
 
 require "setup/cors.php";
