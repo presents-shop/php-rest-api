@@ -16,8 +16,8 @@ class CategoryService
             }
         }
 
-        // Кодиране на meta_options в JSON формат, ако съществуват, или празен масив, ако няма такива
-        $metaOptions = json_encode($data->meta_options ?? []);
+        // Кодиране на options в JSON формат, ако съществуват, или празен масив, ако няма такива
+        $metaOptions = json_encode($data->options ?? []);
 
         // Подготовка на новата категория с данните от $data
         $newCategory = [
@@ -26,7 +26,7 @@ class CategoryService
             "slug" => $data->slug,                     // Slug на категорията
             "thumbnail_id" => $data->thumbnail_id ?? null,     // ID на изображението на категорията или null
             "description" => $data->description ?? null,      // Описание на категорията или null
-            "meta_options" => $metaOptions,                    // JSON кодирани meta options или празен масив
+            "options" => $metaOptions,                    // JSON кодирани meta options или празен масив
             "parent_id" => $data->parent_id ?? null         // ID на родителската категория или null
         ];
 
@@ -49,8 +49,8 @@ class CategoryService
 
         $category = $database->getOne($sql, $params);
 
-        if (!empty($category["meta_options"])) {
-            $category["meta_options"] = json_decode($category["meta_options"]);
+        if (!empty($category["options"])) {
+            $category["options"] = json_decode($category["options"]);
         }
         if (!empty($category["additional_image_ids"])) {
             $category["additional_image_ids"] = json_decode($category["additional_image_ids"]);
@@ -88,8 +88,8 @@ class CategoryService
             return; // Добавено е return за да спре изпълнението
         }
 
-        // Кодиране на meta_options в JSON формат, ако съществуват, или празен масив, ако няма такива
-        $metaOptions = json_encode($data->meta_options) ?? [];
+        // Кодиране на options в JSON формат, ако съществуват, или празен масив, ако няма такива
+        $metaOptions = json_encode($data->options) ?? [];
 
         // Подготовка на актуализираните данни за категорията
         $newCategory = [
@@ -97,7 +97,7 @@ class CategoryService
             "slug"          => $data->slug ?? null,           // Slug на категорията или null, ако не е зададено
             "description"   => $data->description ?? null,    // Описание на категорията или null
             "thumbnail_id"  => $data->thumbnail_id ?? null,   // ID на изображението на категорията или null
-            "meta_options"  => $metaOptions,                  // JSON кодирани meta options или празен масив
+            "options"  => $metaOptions,                  // JSON кодирани meta options или празен масив
             "parent_id"     => $data->parent_id ?? null       // ID на родителската категория или null
         ];
 
@@ -136,8 +136,8 @@ class CategoryService
         $categories = $database->getAll($query["sql"], $query["params"]);
 
         foreach ($categories as &$category) {
-            if (!empty($category["meta_options"])) {
-                $category["meta_options"] = json_decode($category["meta_options"]);
+            if (!empty($category["options"])) {
+                $category["options"] = json_decode($category["options"]);
             }
 
             if (!empty($category["additional_image_ids"])) {

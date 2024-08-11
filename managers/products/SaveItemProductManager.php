@@ -102,13 +102,14 @@ class SaveItemProductManager
         if (!$product)
             return;
 
-        // Добавя медийни данни към продукта
-        $product["media"] = ProductUtil::getItemOptions($product, [
+        // Добавя снимките и категорията към продукта
+        $params = [
+            "with_category" => true,
             "with_thumbnail" => true,
             "with_additional_images" => true,
-        ]);
+        ];
+        $product = ProductPopulator::populateDependencies($product, $params);
 
-        // Връща успешен отговор със статус 200 (OK) и данни за продукта
-        Response::ok($product)->send();
+        return $product;
     }
 }

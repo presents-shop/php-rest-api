@@ -1,6 +1,6 @@
 <?php
 
-require "utils/ProductUtil.php";
+require "populators/ProductPopulator.php";
 require "managers/products/SaveItemProductManager.php";
 
 class ProductController
@@ -8,7 +8,8 @@ class ProductController
     // GET METHODS
     public static function saveItem() {
         $data = getJSONData();
-        SaveItemProductManager::saveItem($data);
+        $product = SaveItemProductManager::saveItem($data);
+        Response::ok($product)->send();
     }
 
     public static function deleteItem()
@@ -39,11 +40,12 @@ class ProductController
         }
 
         $params = [
+            "with_category" => isset($_GET["with_category"]) ? filter_var($_GET["with_category"], FILTER_VALIDATE_BOOLEAN) : false,
             "with_thumbnail" => isset($_GET["with_thumbnail"]) ? filter_var($_GET["with_thumbnail"], FILTER_VALIDATE_BOOLEAN) : false,
             "with_additional_images" => isset($_GET["with_additional_images"]) ? filter_var($_GET["with_additional_images"], FILTER_VALIDATE_BOOLEAN) : false,
         ];
 
-        $product["media"] = ProductUtil::getItemOptions($product, $params);
+        $product = ProductPopulator::populateDependencies($product, $params);
 
         Response::ok($product)->send();
     }
@@ -68,10 +70,11 @@ class ProductController
 
         foreach ($products as &$product) {
             $params = [
+                "with_category" => true,
                 "with_thumbnail" => true,
             ];
 
-            $product["media"] = ProductUtil::getItemOptions($product, $params);
+            $product = ProductPopulator::populateDependencies($product, $params);
         }
 
         Response::ok([
