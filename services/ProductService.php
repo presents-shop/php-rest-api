@@ -176,7 +176,7 @@ class ProductService
 
         // Проверка за categoryId
         if ($categoryId) {
-            $conditions[] = "parent_id = $categoryId";
+            $conditions[] = "category_id = '$categoryId'";
         }
 
         // Добавяне на условията към заявката
