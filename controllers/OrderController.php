@@ -120,4 +120,16 @@ class OrderController
         // 6. Връщане на успешно извлечените данни за поръчката
         Response::ok($order)->send();
     }
+
+    public static function getItems()
+    {
+        $page = $_GET["page"] ?? null;
+        $limit = $_GET["limit"] ?? null;
+        $status = $_GET["status"] ?? null;
+        $offset = ($page - 1) * $limit;
+
+        $orders = OrderService::getItems($offset, $limit, $status);
+
+        Response::ok(["items" => $orders, "params" => $_GET])->send();
+    }
 }

@@ -131,20 +131,69 @@ class OrderService
         try {
             $order = $database->getOne($sql, $params);
 
-            if (!empty($order["product_list"])) {
-                $order["product_list"] = json_decode($order["product_list"]);
-            }
-            if (!empty($order["order_comments"])) {
-                $order["order_comments"] = json_decode($order["order_comments"]);
-            }
-            if (!empty($order["shipping_options"])) {
-                $order["shipping_options"] = json_decode($order["shipping_options"]);
-            }
+            $order = self::processOrderData($order);
 
             return $order;
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());
         }
+    }
+
+    public static function processOrderData($order)
+    {
+        // Проверка и декодиране на "product_list"
+        if (!empty($order["product_list"])) {
+            $order["product_list"] = json_decode($order["product_list"], true);
+        }
+
+        // Проверка и декодиране на "order_comments"
+        if (!empty($order["order_comments"])) {
+            $order["order_comments"] = json_decode($order["order_comments"], true);
+        }
+
+        // Проверка и декодиране на "shipping_options"
+        if (!empty($order["shipping_options"])) {
+            $order["shipping_options"] = json_decode($order["shipping_options"], true);
+        }
+
+        return $order;
+    }
+
+    public static function getItems($offset = 0, $limit = 10, $status = null)
+    {
+        global $database;
+        $sql = "SELECT * FROM orders";
+        $conditions = [];
+
+        // Добавяне на условие за статус на поръчката, ако е предоставен
+        if ($status) {
+            $conditions[] = "order_status = '$status'";
+        }
+
+        // Добавяне на условията към основния SQL
+        if (count($conditions) > 0) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        // Добавяне на лимит към заявката
+        if ($limit) {
+            $sql .= " LIMIT ".intval($limit);
+        }
+
+        // Добавяне на offset към заявката
+        if ($offset) {
+            $sql .= " OFFSET ".intval($offset);
+        }
+
+        // Извличане на поръчките от базата данни с подготвени параметри
+        $orders = $database->getAll($sql);
+
+        // Обработка на всяка поръчка чрез метода processOrderData
+        foreach ($orders as &$order) {
+            $order = self::processOrderData($order);
+        }
+
+        return $orders;
     }
 
     public static function saveOrderProduct($title, $price, $productId, $quantity, $orderId)
