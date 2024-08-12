@@ -11,7 +11,7 @@ class CartService
         function findIndexByProductId($product_id, $cart = [])
         {
             foreach ($cart as $index => $item) {
-                if ($item['product_id'] == $product_id) {
+                if ($item["cart_product_id"] == $product_id) {
                     return $index;
                 }
             }
@@ -26,78 +26,113 @@ class CartService
             }
         }
 
-        if ($data->quantity == 0) {
-            removeProductFromCart($_SESSION[self::$cart], $data->product_id);
+        if ($data->cart_product_quantity == 0) {
+            removeProductFromCart($_SESSION[self::$cart], $data->cart_product_id);
             Response::ok($_SESSION[self::$cart])->send();
+            return;
         }
 
-        if ($product["quantity"] < $data->quantity) {
-            $data->quantity = $product["quantity"];
+        if ($product["quantity"] < $data->cart_product_quantity) {
+            $data->cart_product_quantity = $product["quantity"];
         }
 
-        $price = $product["selling_price"] ? $product["selling_price"] : $product["original_price"];
+        $price = floatval($product["selling_price"] ?? null) ? floatval($product["selling_price"]) : floatval($product["original_price"]);
 
-        if (!in_array($data->product_id, array_column($_SESSION[self::$cart] ?? [], "product_id"))) {
+        if (!in_array($data->cart_product_id, array_column($_SESSION[self::$cart] ?? [], "cart_product_id"))) {
+            // Ако продуктът не съществува в количката, го добавяме
             $_SESSION[self::$cart][] = [
-                "product_id" => $data->product_id,
-                "title" => $product["title"],
-                "price" => $price,
-                "quantity" => $data->quantity,
-                "amount" => floatval($price) * intval($data->quantity)
+                "cart_product_id" => $data->cart_product_id,
+                "cart_product_name" => $product["name"],
+                "cart_product_price" => floatval($price),
+                "cart_product_quantity" => intval($data->cart_product_quantity),
+                "cart_product_amount" => floatval($price) * intval($data->cart_product_quantity)
             ];
         } else {
+            // Ако продуктът съществува, го актуализираме
             foreach ($_SESSION[self::$cart] as &$item) {
-                if ($item["product_id"] == $data->product_id) {
-                    $item["quantity"] = $data->quantity;
+                if ($item["cart_product_id"] == $data->cart_product_id) {
+                    $item["cart_product_quantity"] = intval($data->cart_product_quantity);
+                    $item["cart_product_price"] = floatval($price);
+                    $item["cart_product_amount"] = floatval($price) * intval($data->cart_product_quantity);
                     break;
                 }
             }
+            unset($item); // Добра практика за предотвратяване на нежелани странични ефекти с препратки
         }
     }
 
-    public static function getCartItems($userId, $columns = "*")
+    public static function getCartItems($userId, $populate_product = false)
     {
-        global $database;
+        // Проверка дали потребителят е автентифициран
+        if ($userId) {
+            global $database;
 
-        try {
             $params = [":user_id" => $userId];
-            $cartItems = $database->getAll("SELECT $columns FROM cart WHERE user_id = :user_id", $params);
-            
-            return $cartItems;
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage());
+            // Извличане на артикулите в количката от базата данни
+            $cartItems = $database->getAll("SELECT * FROM cart WHERE cart_user_id = :user_id", $params);
+        } else {
+            // Извличане на артикулите от сесията, ако потребителят не е автентифициран
+            $cartItems = $_SESSION[CartService::$cart] ?? []; // Включена е проверка за наличието на сесията
         }
+
+        // Попълване на информацията за продукта, ако е указано
+        if ($populate_product) {
+            foreach ($cartItems as &$cartItem) {
+                $product = ProductService::findOne($cartItem["cart_product_id"]);
+
+                // Проверка дали продуктът съществува в базата данни
+                if ($product) {
+                    $cartItem = [
+                        "cart_product" => $cartItem,
+                        "product" => $product
+                    ];
+                } else {
+                    // Обработка на случай, при който продуктът не е намерен
+                    $cartItem["product"] = null;
+                }
+            }
+        }
+
+        // Връщане на артикулите от количката
+        return $cartItems;
     }
 
     public static function saveCartItem($data, $userId, $product)
     {
         global $database;
 
-        if ($product["quantity"] < $data->quantity) {
-            $data->quantity = $product["quantity"];
+        // Проверка дали продуктът има налично количество
+        if (isset($product["quantity"]) && $product["quantity"] < $data->cart_product_quantity) {
+            $data->cart_product_quantity = $product["quantity"];
         }
 
-        $price = $product["selling_price"] ? $product["selling_price"] : $product["original_price"];
+        // Определяне на цена, като се вземе предвид промоция или стандартна цена
+        $price = isset($product["selling_price"]) && $product["selling_price"] ? $product["selling_price"] : $product["original_price"];
 
         $cartItem = [
-            "user_id" => $userId,
-            "title" => $product["title"],
-            "product_id" => $data->product_id,
-            "price" => $price,
-            "quantity" => $data->quantity,
-            "amount" => floatval($price) * intval($data->quantity)
+            "cart_user_id" => $userId,
+            "cart_product_name" => $product["name"] ?? '',
+            "cart_product_id" => $data->cart_product_id,
+            "cart_product_price" => floatval($price),
+            "cart_product_quantity" => intval($data->cart_product_quantity),
+            "cart_product_amount" => floatval($price) * intval($data->cart_product_quantity)
         ];
 
-        if (!$database->getOne(
-            "SELECT * FROM cart WHERE user_id = :user_id AND product_id = :product_id",
-            [":user_id" => $userId, ":product_id" => $data->product_id]
-        )) {
+        // Проверка дали продуктът вече съществува в количката
+        $existingCartItem = $database->getOne(
+            "SELECT * FROM cart WHERE cart_user_id = :cart_user_id AND cart_product_id = :cart_product_id",
+            [":cart_user_id" => $userId, ":cart_product_id" => $data->cart_product_id]
+        );
+
+        if (!$existingCartItem) {
+            // Генериране на уникално ID за новия артикул в количката
             $cartItem["id"] = Uuid::v4();
             $database->insert("cart", $cartItem);
         } else {
-            unset($cartItem["user_id"]);
-            $productId = $data->product_id;
-            $database->update("cart", $cartItem, "user_id = '$userId' AND product_id = $productId");
+            // Актуализиране на съществуващия артикул в количката
+            unset($cartItem["cart_user_id"]);
+            $productId = $data->cart_product_id;
+            $database->update("cart", $cartItem, "cart_user_id = '$userId' AND cart_product_id = '$productId'");
         }
     }
 
@@ -105,15 +140,15 @@ class CartService
     {
         global $database;
 
-        $params = [":user_id" => $userId, ":product_id" => $data->product_id];
-        $database->delete("cart", "user_id = :user_id AND product_id = :product_id", $params);
+        $params = [":cart_user_id" => $userId, ":cart_product_id" => $data->cart_product_id];
+        $database->delete("cart", "cart_user_id = :cart_user_id AND cart_product_id = :cart_product_id", $params);
     }
 
     public static function deleteItemsByUser($userId)
     {
         global $database;
 
-        $params = [":user_id" => $userId];
-        $database->delete("cart", "user_id = :user_id", $params);
+        $params = [":cart_user_id" => $userId];
+        $database->delete("cart", "cart_user_id = :cart_user_id", $params);
     }
 }

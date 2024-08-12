@@ -113,18 +113,24 @@ class ProductService
         return self::findOne($id);
     }
 
-    public static function decreaseQuantity($id, $quantity)
+    public static function updateQuantity($id, $quantity)
     {
         global $database;
 
         $product = ProductService::findOne($id);
 
-        $newProduct = [
-            "quantity" => intval($product["quantity"]) - intval($quantity)
+        if (!$product) {
+            $database->rollBack();
+            Response::badRequest("Невалидно id на продукт.")->send();
+            return;
+        }
+
+        $newData = [
+            "quantity" => $quantity,
         ];
         
         try {
-            $database->update("products", $newProduct, "id = '$id'");
+            $database->update("products", $newData, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());

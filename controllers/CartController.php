@@ -1,22 +1,19 @@
 <?php
 
-use Jchook\Uuid;
-
 class CartController
 {
     public static function saveItem()
     {
         $data = getJSONData();
 
-        $columns = "id, title, quantity, original_price, selling_price";
-        $product = ProductService::findOne($data->product_id, "id", $columns);
+        $product = ProductService::findOne($data->cart_product_id, "id");
 
         if (!$product) {
-            Response::badRequest(["invalid_product_id" => "Невалидно id на продукт"])->send();
+            Response::badRequest("Невалидно id на продукт")->send();
         }
         
-        if ($product["quantity"] == 0) {
-            Response::badRequest(["empty_quantity" => "Няма наличност от този продукт"])->send();
+        if ($product["quantity"] <= 0) {
+            Response::badRequest("Няма наличност от този продукт")->send();
         }
 
         $user = UserService::isAuthenticated();
@@ -27,18 +24,14 @@ class CartController
         } else {
             $userId = $user["id"];
 
-            try {
-                if ($data->quantity == 0) {
-                    CartService::deleteItem($data, $userId);
-                } else {
-                    CartService::saveCartItem($data, $userId, $product);
-                }
-
-                $cartItems = CartService::getCartItems($userId);
-                Response::ok($cartItems)->send();
-            } catch (Exception $ex) {
-                throw new Exception($ex->getMessage());
+            if ($data->cart_product_quantity == 0) {
+                CartService::deleteItem($data, $userId);
+            } else {
+                CartService::saveCartItem($data, $userId, $product);
             }
+
+            $cartItems = CartService::getCartItems($userId, true);
+            Response::ok($cartItems)->send();
         }
     }
 
@@ -46,11 +39,7 @@ class CartController
     {
         $user = UserService::isAuthenticated();
 
-        if (!$user) {
-            Response::ok($_SESSION[CartService::$cart])->send();
-        } else {
-            $cartItems = CartService::getCartItems($user["id"]);
-            Response::ok($cartItems)->send();
-        }
+        $cartItems = CartService::getCartItems($user["id"] ?? null, true);
+        Response::ok($cartItems)->send();
     }
 }
