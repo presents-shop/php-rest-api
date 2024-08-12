@@ -79,4 +79,45 @@ class OrderController
             Response::serverError($e->getMessage())->send();
         }
     }
+
+    public static function getItem()
+    {
+        // 1. Извличане на ID-то на поръчката от заявката
+        $id = $_GET["id"] ?? null;
+
+        // 2. Проверка дали ID-то е валидно (не е празно)
+        if (empty($id)) {
+            Response::badRequest("Невалиден идентификатор на поръчка")->send();
+            return;
+        }
+
+        // 3. Извличане на поръчката по ID чрез OrderService
+        $order = OrderService::getItem($id);
+
+        // 4. Проверка дали поръчката съществува
+        if (!$order) {
+            Response::notFound("Поръчката не е намерена")->send();
+            return;
+        }
+
+        // 5. Обработка на списъка с продукти в поръчката
+        foreach ($order["product_list"] as &$cartItem) {
+            // Извличане на данните за продукта
+            $product = ProductService::findOne($cartItem->cart_product_id);
+
+            // Ако продуктът съществува, добавяне на данните за него към артикула в количката
+            if ($product) {
+                $cartItem = [
+                    "cart_product" => $cartItem,
+                    "product" => $product
+                ];
+            } else {
+                // Ако продуктът не е намерен, задаване на стойност null
+                $cartItem->product = null;
+            }
+        }
+
+        // 6. Връщане на успешно извлечените данни за поръчката
+        Response::ok($order)->send();
+    }
 }

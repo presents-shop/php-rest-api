@@ -131,13 +131,13 @@ class OrderService
         try {
             $order = $database->getOne($sql, $params);
 
-            if ($order["product_list"]) {
+            if (!empty($order["product_list"])) {
                 $order["product_list"] = json_decode($order["product_list"]);
             }
-            if ($order["order_comments"]) {
+            if (!empty($order["order_comments"])) {
                 $order["order_comments"] = json_decode($order["order_comments"]);
             }
-            if ($order["shipping_options"]) {
+            if (!empty($order["shipping_options"])) {
                 $order["shipping_options"] = json_decode($order["shipping_options"]);
             }
 
