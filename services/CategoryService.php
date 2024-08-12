@@ -161,8 +161,10 @@ class CategoryService
         }
 
         // Проверка за parentId
-        if ($parentId) {
-            $conditions[] = "parent_id = $parentId";
+        if (!$parentId && !$search) {
+            $conditions[] = "parent_id IS NULL";
+        } else if ($parentId) {
+            $conditions[] = "parent_id = '$parentId'";
         }
 
         // Добавяне на условията към заявката
@@ -191,14 +193,24 @@ class CategoryService
         return ["sql" => $sql, "params" => $params];
     }
 
-    public static function getItemsLength($search)
+    public static function getItemsLength($search, $parentId)
     {
         global $database;
 
         $sql = "SELECT COUNT(*) AS 'length' FROM categories";
 
         if ($search) {
-            $sql .= " WHERE title LIKE '%$search%'";
+            $conditions[] = "title LIKE '%$search%'";
+        }
+
+        if (!$parentId && !$search) {
+            $conditions[] = "parent_id IS NULL";
+        } else if ($parentId) {
+            $conditions[] = "parent_id = '$parentId'";
+        }
+
+        if (count($conditions) > 0) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
         }
 
         try {
@@ -217,7 +229,7 @@ class CategoryService
 
         try {
             $updatedCategory = ["thumbnail_id" => $data->media_id];
-            $database->update("categories", $updatedCategory, "id = $id");
+            $database->update("categories", $updatedCategory, "id = '$id'");
             return self::findOne($id);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage());

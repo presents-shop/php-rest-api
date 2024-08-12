@@ -69,6 +69,7 @@ class CategoryController
     {
         $column = $_GET["column"] ?? null;
         $value = $_GET["value"] ?? null;
+        $withParents = $_GET["with_parents"] ?? null;
 
         $category = CategoryService::findOne($value, $column);
 
@@ -80,10 +81,27 @@ class CategoryController
         );
 
         if (!$category) {
-            Response::badRequest(["invalid_id" => "Тази категория не съществува"])->send();
+            Response::badRequest("Тази категория не съществува")->send();
         }
 
-        Response::ok($category)->send();
+        $breadcrumbs = [];
+
+        if ($withParents) {
+            $currentParentId = $category["parent_id"] ?? null;
+
+            while($currentParentId) {
+                $parent = CategoryService::findOne($currentParentId);
+
+                if (!$parent) {
+                    break;
+                }
+
+                $breadcrumbs[] = $parent;
+                $currentParentId = $parent["parent_id"] ?? null;
+            }
+        }
+
+        Response::ok(["item" => $category, "breadcrumbs" => $breadcrumbs])->send();
     }
 
     public static function getItemOptions($category, $params)
@@ -118,7 +136,7 @@ class CategoryController
         $offset = ($page - 1) * $limit;
 
         $categories = CategoryService::findAll($offset, $limit, $search, $sort, $parentId);
-        $length = CategoryService::getItemsLength($search);
+        $length = CategoryService::getItemsLength($search, $parentId);
 
         foreach ($categories as &$category) {
             $category["media"] = self::getItemOptions($category, ["with_thumbnail" => true]);
@@ -132,6 +150,7 @@ class CategoryController
                 "limit" => intval($limit),
                 "search" => $search,
                 "sort" => $sort,
+                "parent_id" => $parentId,
             ]
         ])->send();
     }
