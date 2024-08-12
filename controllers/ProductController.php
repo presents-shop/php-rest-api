@@ -47,7 +47,24 @@ class ProductController
 
         $product = ProductPopulator::populateDependencies($product, $params);
 
-        Response::ok($product)->send();
+        if ($product["category"]) {
+            $currentParentId = $product["category"]["parent_id"] ?? null;
+
+            $breadcrumbs[] = $product["category"];
+
+            while($currentParentId) {
+                $parent = CategoryService::findOne($currentParentId);
+
+                if (!$parent) {
+                    break;
+                }
+
+                $breadcrumbs[] = $parent;
+                $currentParentId = $parent["parent_id"] ?? null;
+            }
+        }
+
+        Response::ok(["product" => $product, "breadcrumbs" => $breadcrumbs])->send();
     }
 
     public static function getItems()
